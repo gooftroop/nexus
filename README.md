@@ -16,7 +16,7 @@ Microservices proxy and manager that provides the ability to act as both a LAN/W
 
 Nexus is an express app over jspm. To install:
 
-<p><code> cd nexus</code></p>
+<p><code>cd nexus</code></p>
 <p><code>jspm init</code></p>
 
 # Configuration
