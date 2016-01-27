@@ -1,0 +1,54 @@
+{
+  "author": "Brandon Webb",
+  "bugs": {
+    "url": "https://github.com/propelmarketing/nexus/issues",
+    "email": ""
+  },
+  "dependencies": {
+    "config": ">=1.19.0",
+    "express": ">=4.13.4"
+  },
+  "description": "Propel Marketing Engineering operations portal",
+  "devDependencies": {
+    "jasmine-node": "^1.14.5",
+    "jspm": ">=0.16.24",
+    "jspm-node": "^0.1.0"
+  },
+  "email": "bwebb@propelmarketing.com",
+  "engine": "node >= 5.5.0",
+  "homepage": "https://github.com/propelmarketing/nexus",
+  "jspm": {
+    "dependencies": {
+      "config": "npm:config@^1.19.0",
+      "consign": "npm:consign@^0.1.2",
+      "express": "npm:express@^4.13.4",
+      "http-proxy": "npm:http-proxy@^1.12.1",
+      "lodash": "npm:lodash@^4.0.0",
+      "morgan": "npm:morgan@^1.6.1",
+      "request": "npm:request@^2.69.0",
+      "winston": "npm:winston@^2.1.1",
+      "winston-syslog": "npm:winston-syslog@^1.2.1"
+    },
+    "devDependencies": {
+      "babel": "npm:babel-core@^5.8.24",
+      "babel-runtime": "npm:babel-runtime@^5.8.24",
+      "core-js": "npm:core-js@^1.1.4"
+    }
+  },
+  "keywords": "jspm babel microservices",
+  "license": "MIT",
+  "main": "index.js",
+  "name": "nexus",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/propelmarketing/nexus.git"
+  },
+  "scripts": {
+    "prepublish": "jspm-node",
+    "pretest": "jspm bundle-sfx index.js",
+    "test": "jasmine-node tests",
+    "prestart": "jspm bundle-sfx index.js",
+    "start": "node index.js"
+  },
+  "version": "0.0.1",
+}

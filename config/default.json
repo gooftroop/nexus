@@ -1,0 +1,63 @@
+/**
+ * Default configurations
+ */
+{
+	"server": {
+		"backlog": 511,
+		"debug": true,
+		"discovery": true,
+		"hostname": "localhost",
+		"logging": true,
+		"port": 8080,
+		"static": true,
+		"staticRoot": "public"
+	},
+	"logging": {
+		"handlers": {
+			"console": {
+				"transport": "winston.transports.Console",
+				"handleExceptions": true,
+				"humanReadableUnhandledException": true,
+			    "json": false,
+			    "colorize": true
+			},
+			"defaultFileHandler": {
+				"transport": "winston.transports.File",
+				"filename": "log/nexus.out",
+		        "handleExceptions": true,
+		        "humanReadableUnhandledException": true,
+		        "json": true,
+		        "maxsize": 5242880,  // 5MB
+		        "maxFiles": 5,
+		        "colorize": false
+			}
+		},
+		"loggers": {
+			"debug": {
+				"level": "debug",
+				"name": "debug",
+				"handler": "console"
+			},
+			"verbose": {
+				"level": "verbose",
+				"name": "verbose",
+				"handler": "defaultFileHandler"
+			},
+			"info": {
+				"level": "info",
+				"name": "info",
+				"handler": "defaultFileHandler"
+			},
+			"warn": {
+				"level": "warn",
+				"name": "warn",
+				"handler": "defaultFileHandler"
+			},
+			"error": {
+				"level": "error",
+				"name": "error",
+				"handler": "defaultFileHandler"
+			}
+		}
+	}
+}
