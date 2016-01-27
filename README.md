@@ -1,5 +1,5 @@
 # Nexus
-<p>
+
 Microservices proxy and manager that provides the ability to act as both a LAN/WAN microservices cluster manager. 
 1. Provides a public-facing Services ('/services/') API:
   - Register services for automatic API discovery and exposure on the proxy
@@ -10,7 +10,6 @@ Microservices proxy and manager that provides the ability to act as both a LAN/W
   - Automatically unregsiters services when services broadcast 'down'
 3. Provides a REST API as a proxy over all registered services
 4. [[future]] Provides an isomorphic (universal) app for analytics and management
-</p>
 
 # Installation
 
