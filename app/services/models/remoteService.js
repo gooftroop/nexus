@@ -1,5 +1,6 @@
 "use strict";
 
+import _ from "lodash";
 import Service from "./service.js";
 
 /**
@@ -11,23 +12,27 @@ export default class RemoteService extends Service {
 
 	/**
 	 * [constructor description]
-	 * @param  {[type]} name [description]
-	 * @param  {[type]} attrs  [description]
-	 * @return {[type]}      [description]
+	 * @param  {[type]} name  [description]
+	 * @param  {[type]} props [description]
+	 * @return {[type]}       [description]
 	 */
-	constructor(name, attrs) {
-		// TODO handle exxceptions. api must exist
+	constructor(name, props) {
+		// TODO handle exxceptions. url must exist.
 		super(name);
-		this.url = attrs.url;
-		this.api = {};
+		this.url = props.url; // <(protocol://)?(hostname|ip){1}[:port]?
+		this.root = props.root;
+		this.api = props.api || {};
+	}
 
-		// syntax is: { <fragment> : <METHOD | [METHODS]>, ...etc. >
-
-		let api = attrs.api, fragment;
-		for (fragment in api) {
-			// if an api fragment begins with <name>, use the fragment
-			// if an api fragment doesn't begin with fragment, add <name> + / + fragment
-		}
+	/**
+	 * [generateProxyApi description]
+	 * @return {[type]} [description]
+	 */
+	*generateProxyApi() {
+		// for the proxy just create a route function as such:
+		// /<name>/:path
+		// Where :path is forwarded to the service with root
+		// prefixed, if root exists
 	}
 
 	/**
@@ -38,7 +43,9 @@ export default class RemoteService extends Service {
 		return _.extend(
 			super(),
 			{
-				url: this.url
+				url: this.url,
+				root: this.root,
+				api: this.api
 			}
 		);
 	}

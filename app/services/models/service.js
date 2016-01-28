@@ -27,6 +27,7 @@ export default class Service {
 		if (!_.isObject(api)) {
 			throw new IllegalArgumentException(CODES.INVALID_TYPE, "api", "object");
 		}
+
 		this.name = name;
 	}
 
