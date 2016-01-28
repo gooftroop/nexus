@@ -19,20 +19,23 @@ export default class RemoteService extends Service {
 	constructor(name, props) {
 		// TODO handle exxceptions. url must exist.
 		super(name);
-		this.url = props.url; // <(protocol://)?(hostname|ip){1}[:port]?
-		this.root = props.root;
+		this._address = props.address; // <(protocol://)?(hostname|ip){1}[:port]?
+		this._root = props.root;
 		this.api = props.api || {};
 	}
 
 	/**
-	 * [generateProxyApi description]
+	 * [url description]
 	 * @return {[type]} [description]
 	 */
-	*generateProxyApi() {
-		// for the proxy just create a route function as such:
-		// /<name>/:path
-		// Where :path is forwarded to the service with root
-		// prefixed, if root exists
+	get url() {
+		// TODO check for protocol?
+		// TODO modify for websockets??
+		if (this._root == null) {
+			return this._address
+		} else {
+			return [this._address, this._root].join("/");
+		}
 	}
 
 	/**
@@ -43,8 +46,9 @@ export default class RemoteService extends Service {
 		return _.extend(
 			super(),
 			{
-				url: this.url,
-				root: this.root,
+				address: this._address,
+				root: this._root,
+				url: this.url(),
 				api: this.api
 			}
 		);

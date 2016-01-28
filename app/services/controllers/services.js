@@ -1,6 +1,7 @@
 "use strict";
 
 import _ from "lodash";
+import request from "request";
 import INexusController from "app/shared/controllers/base.js";
 import CODES from "app/shared/error/codes.js";
 import IllegalArgumentException from "app/shared/error/exceptions.js";
@@ -135,8 +136,10 @@ export default class ServicesController extends INexusController {
 				attrs = req.body;
 
 			// TODO validate attrs
+			service = new RemoteService(name, attrs);
 			this._set_service_discovery(name);
-			this.register(attrs);
+			this._defineProxyAPI(service);
+			this.register(name, service);
 		} catch(e) {
 			res.status(e.status).send(JSON.stringify(e));
 		}
@@ -168,15 +171,13 @@ export default class ServicesController extends INexusController {
 	 * @param  {[type]} attrs  [description]
 	 * @return {[type]}      [description]
 	 */
-	register(name, attrs) {
+	register(name, serivce) {
 		// Instantiate a new Service model and add it to the registry
 		if (attrs == null) {
 			throw new IllegalArgumentException(CODES.REQUIRED_PARAMETER, "attrs");
 		}
 
-		// TODO this has to change if we want to allow local registers via a message queue
-		service = new RemoteService(name, attrs);
-		this._defineProxyAPI(service);
+		// TODO service can be a Service instance or an object of attrs. Handle this.
 		this._registry.set(name, service);
 	}
 
@@ -205,9 +206,43 @@ export default class ServicesController extends INexusController {
 		this._registry.remove(name);
 	}
 
+	/**
+	 * [_defineProxyAPI description]
+	 * @param  {[type]} service [description]
+	 * @return {[type]}         [description]
+	 */
 	_defineProxyAPI(service) {
 		// TODO need to create proxy requests for the service api
 		// TODO we need a way to be indicated to that we should use an HTTP proxy or WebSocket proxy
 		// since request doesn't handle both
+		//
+		// for the proxy just create a route function as such:
+		// /<name>/:path
+		// Where :path is forwarded to the service with root
+		// prefixed, if root exists
+		// So...we can use app.all() and let the microservice handle the method not being supported
+		// for a specific url, or we can require api and only build the routes for the defined methods
+		// ....Im leaning for the former since that reduces the hard requirements for mircoservices
+		// particpating nexus.
+
+		// TODO force HTTPS? or allow option
+		// TODO WebSockets????
+		// TODO does address give fully qualified url??
+		let url = [this.app.address(), service.name, "/:fragment"].join("/"),
+			serviceUrl = serivce.url();
+
+		this.app.all(url, function(req, res) {
+
+			let fragment = req.params.fragment,
+				method = req.method; // TODO correct?
+
+			serviceUrl += ("/" + fragment) // TODO there should be no leading '/'
+			request[method](serviceUrl).on("response", function(response) {
+
+				res.status = response.statusCode;
+				// TODO headers, body, cookies, etc?
+				res.send();
+			});
+		});
 	}
 }
