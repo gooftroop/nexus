@@ -21,13 +21,12 @@ export default class RemoteService extends Service {
 		this.url = attrs.url;
 		this.api = {};
 
-		// if an api fragment begins with <name>, use the fragment
-		// if an api fragment doesn't begin with fragment, add <name> + / + fragment
 		// syntax is: { <fragment> : <METHOD | [METHODS]>, ...etc. >
 
 		let api = attrs.api, fragment;
 		for (fragment in api) {
-
+			// if an api fragment begins with <name>, use the fragment
+			// if an api fragment doesn't begin with fragment, add <name> + / + fragment
 		}
 	}
 
