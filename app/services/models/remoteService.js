@@ -5,24 +5,42 @@ import Service from "./service.js";
 /**
  *
  */
-
 export default class RemoteService extends Service {
 
-	// TODO auto configure SNMP for service status
+	// TODO auto configure SNMP for service status?
 
 	/**
 	 * [constructor description]
 	 * @param  {[type]} name [description]
-	 * @param  {[type]} url  [description]
+	 * @param  {[type]} attrs  [description]
 	 * @return {[type]}      [description]
 	 */
-	constructor(name, api) {
-		// TODO handle exxceptions.
+	constructor(name, attrs) {
+		// TODO handle exxceptions. api must exist
 		super(name);
-		this._props.url = api.url;
+		this.url = attrs.url;
+		this.api = {};
+
+		// if an api fragment begins with <name>, use the fragment
+		// if an api fragment doesn't begin with fragment, add <name> + / + fragment
+		// syntax is: { <fragment> : <METHOD | [METHODS]>, ...etc. >
+
+		let api = attrs.api, fragment;
+		for (fragment in api) {
+
+		}
 	}
 
-	get url() {
-		return this._props.url;
+	/**
+	 * [toJSON description]
+	 * @return {[type]} [description]
+	 */
+	toJSON() {
+		return _.extend(
+			super(),
+			{
+				url: this.url
+			}
+		);
 	}
 }

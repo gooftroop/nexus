@@ -27,25 +27,16 @@ export default class Service {
 		if (!_.isObject(api)) {
 			throw new IllegalArgumentException(CODES.INVALID_TYPE, "api", "object");
 		}
-
-		this._props = {
-			"name": name
-		};
+		this.name = name;
 	}
 
 	/**
-	 * [name description]
-	 * @return {[type]} [description]
-	 */
-	get name() {
-		return this._props.name;
-	}
-
-	/**
-	 * [toJSON description]
+	 * Override at Service implementation level
 	 * @return {[type]} [description]
 	 */
 	toJSON() {
-		return this._props;
+		return {
+			name: this.name
+		};
 	}
 }

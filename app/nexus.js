@@ -61,7 +61,7 @@ export default class Nexus {
 
 		this.app.use(bodyParser.json());
 
-		// for parsing application/x-www-form-urlencoded
+		// For parsing application/x-www-form-urlencoded
 		this.app.use(bodyParser.urlencoded({
 			extended: true
 		}));

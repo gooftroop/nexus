@@ -5,12 +5,12 @@ import INexusController from "app/shared/controllers/base.js";
 import CODES from "app/shared/error/codes.js";
 import IllegalArgumentException from "app/shared/error/exceptions.js";
 import Registry from "app/services/registry.js";
-import Service from "app/services/models/service.js"
+import RemoteService from "app/services/models/remoteService.js"
 
 /**
  * Proxy request syntax:
  *
- * https://<hostname|nexus.io>:<port|>/services/<:service_name>(/<:method_name|:api_key>/<:method_arguments>)
+ * https://<hostname|nexus.io>:<port|>/<:service_name>(/<:method_name|:api_key>/<:method_arguments>)
  */
 export default class ServicesController extends INexusController {
 
@@ -37,6 +37,7 @@ export default class ServicesController extends INexusController {
 		// Configure Polo events
 		this._services.on("up", function(name, service) {
 			// TODO what is service?
+			// TODO might need a way to ask this service for it's api...
 			console.log(service);
 			this.register(name, service);
 		});
@@ -131,11 +132,11 @@ export default class ServicesController extends INexusController {
 
 		try {
 			let name = req.param.name,
-				api = req.body;
+				attrs = req.body;
 
-			// TODO validate api
+			// TODO validate attrs
 			this._set_service_discovery(name);
-			this.register(api);
+			this.register(attrs);
 		} catch(e) {
 			res.status(e.status).send(JSON.stringify(e));
 		}
@@ -163,16 +164,20 @@ export default class ServicesController extends INexusController {
 
 	/**
 	 * [register description]
-	 * @param  {[type]} desc [description]
-	 * @return {[type]}         [description]
+	 * @param  {[type]} name [description]
+	 * @param  {[type]} attrs  [description]
+	 * @return {[type]}      [description]
 	 */
-	register(name, api) {
+	register(name, attrs) {
 		// Instantiate a new Service model and add it to the registry
-		if (api == null) {
-			throw new IllegalArgumentException(CODES.REQUIRED_PARAMETER, "api");
+		if (attrs == null) {
+			throw new IllegalArgumentException(CODES.REQUIRED_PARAMETER, "attrs");
 		}
 
-		this._registry.set(name, new Service(name, api));
+		// TODO this has to change if we want to allow local registers via a message queue
+		service = new RemoteService(name, attrs);
+		this._defineProxyAPI(service);
+		this._registry.set(name, service);
 	}
 
 	/**
@@ -198,5 +203,11 @@ export default class ServicesController extends INexusController {
 	 */
 	unregister(name) {
 		this._registry.remove(name);
+	}
+
+	_defineProxyAPI(service) {
+		// TODO need to create proxy requests for the service api
+		// TODO we need a way to be indicated to that we should use an HTTP proxy or WebSocket proxy
+		// since request doesn't handle both
 	}
 }
