@@ -3,8 +3,9 @@
 import _ from "lodash";
 import request from "request";
 import Service from "./service.js";
-import ServiceException from "app/shared/error/exceptions.js";
+import { ServiceException, IllegalArgumentException } from "app/shared/error/exceptions.js";
 import CODES from "app/shared/error/codes.js";
+import { ensureForwardSlash } from "app/shared/utils.js";
 
 /**
  *
@@ -20,12 +21,16 @@ export default class RemoteService extends Service {
 	 * @return {[type]}       [description]
 	 */
 	constructor(name, props) {
-		// TODO handle exxceptions. url must exist.
+		// TODO handle exceptions. address must exist and must be valid
 		super(name);
-		this._address = props.address; // <(protocol://)?(hostname|ip){1}[:port]?
-		this.api = props.api || {};
-		this._mapping = {};
-		this._root = props.root;
+		this._address = this._validateAddress(props.address); // <(protocol://)?(hostname|ip){1}[:port]?
+
+		this.api = {};
+		if (_.has(props, "api")) {
+			this.api = this._validateApi(props.api);
+		}
+
+		this._root = this._validateRoot(props.root);
 
 		this.bind();
 	}
@@ -37,13 +42,13 @@ export default class RemoteService extends Service {
 	 */
 	bind() {
 
-		let _path, props;
+		let _path, _props;
 		for (_path in this.api) {
 
-			props = this.api[_path];
+			_props = this.api[_path];
 			let url,
-				methods = this._get_methods(props),
-				options = _without(props, "method");
+				methods = this._getMethods(_props),
+				options = _without(_props, "method");
 
 			// Replace the '/' in the path with '_' so that the path is
 			// callable on the service and assign it a proxy function to
@@ -72,7 +77,7 @@ export default class RemoteService extends Service {
 
 				// Build the fully qualified url for the request against the
 				// remote service
-				url = this.url + _path; // TODO make sure url and path is joined by '/'
+				url = this.url + ensureForwardSlash(_path);
 
 				// Call the cooresponding method with the modified args array
 				return this[method](...args);
@@ -90,7 +95,7 @@ export default class RemoteService extends Service {
 		if (this._root == null) {
 			return this._address
 		} else {
-			return [this._address, this._root].join("/");
+			return this._address + ensureForwardSlash(this._root);
 		}
 	}
 
@@ -178,12 +183,46 @@ export default class RemoteService extends Service {
 	  * @param  {[type]} props [description]
 	  * @return {[type]}       [description]
 	  */
-	 _get_methods(props) {
+	 _getMethods(props) {
 	 	let _methods = props.method;
 	 	_methods = _.isString(_methods) ? _methods.split(" ") : _methods;
 	 	if (!_.isArray(_methods)) {
 	 		throw new ServiceException(CODES.INVALID_TYPE, "method", "string or array");
 	 	}
 	 	return _methods;
+	 }
+
+	 /**
+	  * [_validate_address description]
+	  * @param  {[type]} address [description]
+	  * @return {[type]}         [description]
+	  */
+	 _validateAddress(address) {
+	 	// TODO validate
+	 	return address;
+	 }
+
+	 /**
+	  * [_validate_api description]
+	  * @param  {[type]} api [description]
+	  * @return {[type]}     [description]
+	  */
+	 _validateApi(api) {
+	 	if (!_.isObject(api)) {
+			throw new IllegalArgumentException(CODES.INVALID_TYPE, "api", "object");
+		}
+	 	return api;
+	 }
+
+	 /**
+	  * [_validate_root description]
+	  * @param  {[type]} root [description]
+	  * @return {[type]}      [description]
+	  */
+	 _validateRoot(root) {
+	 	if (!_.isString(root)) {
+			throw new IllegalArgumentException(CODES.INVALID_TYPE, "root", "string");
+		}
+	 	return root;
 	 }
 }

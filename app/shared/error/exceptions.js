@@ -1,6 +1,6 @@
 "use strict";
 
-import (DEFAULT_MESSAGE, DEFAULT_ERROR_CODE, DEFAULT_HTTP_ERROR_STATUS) from "./codes.js";
+import { DEFAULT_MESSAGE, DEFAULT_ERROR_CODE, DEFAULT_HTTP_ERROR_STATUS } from "./codes.js";
 import _ from "lodash";
 
 /**

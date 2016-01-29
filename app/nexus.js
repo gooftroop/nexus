@@ -30,8 +30,14 @@ export default class Nexus {
 		// Begin server configuration
 		this.configure(options);
 		this.middleware(options);
+		this.bind();
+	}
 
-		// move to someplace else
+	/**
+	 * [bind description]
+	 * @return {[type]} [description]
+	 */
+	bind() {
 		app.get('/', function(req, res) {
   			res.sendfile(__dirname + '/public/index.html');
 		});
@@ -70,6 +76,8 @@ export default class Nexus {
 		this.app.use(bodyParser.urlencoded({
 			extended: true
 		}));
+
+		// TODO add cookie parsing
 	}
 
 	/**
@@ -83,6 +91,8 @@ export default class Nexus {
 			options.backlog || this.config.get("backlog"),
 			options.listenCallback || this._defaultListenCallback
 		);
+
+		// TODO add websocket server
 	}
 
 	/**

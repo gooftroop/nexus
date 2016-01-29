@@ -2,7 +2,7 @@
 
 import _ from "lodash";
 import CODES from "app/shared/error/codes.js";
-import IllegalArgumentException from "app/shared/error/exceptions.js";
+import { IllegalArgumentException } from "app/shared/error/exceptions.js";
 
 /**
  * Provides a registry of all services (or apps) connected to the server

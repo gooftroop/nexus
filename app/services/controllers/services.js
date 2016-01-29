@@ -4,7 +4,7 @@ import _ from "lodash";
 import request from "request";
 import INexusController from "app/shared/controllers/base.js";
 import CODES from "app/shared/error/codes.js";
-import IllegalArgumentException from "app/shared/error/exceptions.js";
+import { IllegalArgumentException } from "app/shared/error/exceptions.js";
 import Registry from "app/services/registry.js";
 import RemoteService from "app/services/models/remoteService.js"
 
@@ -52,9 +52,9 @@ export default class ServicesController extends INexusController {
 	 * @return {[type]} [description]
 	 */
 	bind() {
-		this.app.get("/services/:name", this._proxy_services);
-		this.app.post("/services/register/:name", this._proxy_register);
-		this.app.post("/services/unregister/:name", this._procxy_unregister);
+		this.app.get("/services/:name", this._proxyServices);
+		this.app.post("/services/register/:name", this._proxyRegister);
+		this.app.post("/services/unregister/:name", this._proxyUnregister);
 	}
 
 	/**
@@ -113,6 +113,7 @@ export default class ServicesController extends INexusController {
 	 */
 	unregister(name) {
 		this._registry.remove(name);
+		// TODO remove from polo
 	}
 
 	/**************************************************************************
@@ -152,6 +153,8 @@ export default class ServicesController extends INexusController {
 				args = [];
 
 			args[0] = method;
+			// TODO there's probably a better way to build these args...
+			// it's too bad es6 doesn't have constructor overloading :(
 			if (method == "get") { // TODO make constant and ignore case
 				args[2] = res;
 			} else {
@@ -169,7 +172,7 @@ export default class ServicesController extends INexusController {
 	 * @param  {[type]} res [description]
 	 * @return {[type]}     [description]
 	 */
-	_proxy_register(req, res) {
+	_proxyRegister(req, res) {
 		// create service and register it
 		// set state to active
 
@@ -179,7 +182,7 @@ export default class ServicesController extends INexusController {
 
 			// TODO validate attrs
 			service = new RemoteService(name, attrs);
-			this._set_service_discovery(name);
+			this._setServiceDiscovery(name);
 			this._defineProxyAPI(service);
 			this._register(name, service);
 		} catch(e) {
@@ -193,7 +196,7 @@ export default class ServicesController extends INexusController {
 	 * @param  {[type]} res [description]
 	 * @return {[type]}     [description]
 	 */
-	_proxy_services(req, res) {
+	_proxyServices(req, res) {
 		try {
 			let service = this.services(req.name);
 			if (_.isArray(service)) {
@@ -212,7 +215,7 @@ export default class ServicesController extends INexusController {
 	 * @param  {[type]} res [description]
 	 * @return {[type]}     [description]
 	 */
-	_proxy_unregister(req, res) {
+	_proxyUnregister(req, res) {
 		// remove from register
 		try {
 			let name = req.param.name;
@@ -242,7 +245,7 @@ export default class ServicesController extends INexusController {
 	 * [_set_service_discovery description]
 	 * @param {[type]} name [description]
 	 */
-	_set_service_discovery(name) {
+	_setServiceDiscovery(name) {
 		if (name == null) {
 			throw new IllegalArgumentException(CODES.REQUIRED_PARAMETER, "name");
 		}
