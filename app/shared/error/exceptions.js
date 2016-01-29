@@ -69,7 +69,24 @@ export class RegistryException extends NexusException {
 	 * @return {[type]}         [description]
 	 */
 	constructor(...args) {
-    	super(args);
+    	super(...args);
+    	this.name = this.constructor.name;
+    	Error.captureStackTrace(this, this.constructor.name)
+  	}
+}
+
+/**
+ *
+ */
+export class ServiceException extends NexusException {
+
+	/**
+	 * [constructor description]
+	 * @param  {...[type]} args [description]
+	 * @return {[type]}         [description]
+	 */
+	constructor(...args) {
+    	super(...args);
     	this.name = this.constructor.name;
     	Error.captureStackTrace(this, this.constructor.name)
   	}

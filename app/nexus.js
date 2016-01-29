@@ -30,6 +30,11 @@ export default class Nexus {
 		// Begin server configuration
 		this.configure(options);
 		this.middleware(options);
+
+		// move to someplace else
+		app.get('/', function(req, res) {
+  			res.sendfile(__dirname + '/public/index.html');
+		});
 	}
 
 	/**
@@ -54,7 +59,7 @@ export default class Nexus {
 		.include("app/services/controllers")
 		.then("app/server/controllers")
 		.into(this.app);
-		console.log(this.app);
+		console.log(this.app); // DEBUG
 	}
 
 	middleware(options) {

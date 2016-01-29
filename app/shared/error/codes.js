@@ -50,6 +50,13 @@ const CODES = {
 		message: function(arg) {
 			return arg + " must be a valid service name";
 		}
+	},
+	METHOD_NOT_SUPPORTED: {
+		code: 102,
+		status: 404,
+		message: function(method, url, name) {
+			return "Method '" + method + "' for url '" + url + "' is not supported by the service '" + name "'."
+		}
 	}
 };
 
