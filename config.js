@@ -18,6 +18,7 @@ System.config({
     "babel-runtime": "npm:babel-runtime@5.8.35",
     "config": "npm:config@1.19.0",
     "consign": "npm:consign@0.1.2",
+    "cookie-parser": "npm:cookie-parser@1.4.1",
     "core-js": "npm:core-js@1.2.6",
     "econfig": "npm:econfig@0.0.1",
     "express": "npm:express@4.13.4",
@@ -214,7 +215,7 @@ System.config({
       "create-hash": "npm:create-hash@1.1.2",
       "create-hmac": "npm:create-hmac@1.1.4",
       "crypto": "github:jspm/nodelibs-crypto@0.1.0",
-      "elliptic": "npm:elliptic@6.2.2",
+      "elliptic": "npm:elliptic@6.2.3",
       "inherits": "npm:inherits@2.0.1",
       "parse-asn1": "npm:parse-asn1@5.0.0",
       "stream": "github:jspm/nodelibs-stream@0.1.0"
@@ -292,6 +293,10 @@ System.config({
       "buffer": "github:jspm/nodelibs-buffer@0.1.0",
       "path": "github:jspm/nodelibs-path@0.1.0"
     },
+    "npm:cookie-parser@1.4.1": {
+      "cookie": "npm:cookie@0.2.3",
+      "cookie-signature": "npm:cookie-signature@1.0.6"
+    },
     "npm:cookie-signature@1.0.6": {
       "crypto": "github:jspm/nodelibs-crypto@0.1.0"
     },
@@ -308,7 +313,7 @@ System.config({
       "bn.js": "npm:bn.js@4.9.0",
       "buffer": "github:jspm/nodelibs-buffer@0.1.0",
       "crypto": "github:jspm/nodelibs-crypto@0.1.0",
-      "elliptic": "npm:elliptic@6.2.2"
+      "elliptic": "npm:elliptic@6.2.3"
     },
     "npm:create-hash@1.1.2": {
       "buffer": "github:jspm/nodelibs-buffer@0.1.0",
@@ -395,7 +400,7 @@ System.config({
       "crypto": "github:jspm/nodelibs-crypto@0.1.0",
       "jsbn": "npm:jsbn@0.1.0"
     },
-    "npm:elliptic@6.2.2": {
+    "npm:elliptic@6.2.3": {
       "bn.js": "npm:bn.js@4.9.0",
       "brorand": "npm:brorand@1.0.5",
       "hash.js": "npm:hash.js@1.0.3",

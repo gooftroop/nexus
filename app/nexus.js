@@ -6,6 +6,7 @@ import morgan from "morgan";
 import polo from "polo";
 import consign from "consign";
 import bodyParser from "body-parser";
+import cookieParser from "cookie-parser";
 import Logger from "app/server/logger.js";
 
 /**
@@ -77,7 +78,7 @@ export default class Nexus {
 			extended: true
 		}));
 
-		// TODO add cookie parsing
+		this.app.use(cookieParser());
 	}
 
 	/**
