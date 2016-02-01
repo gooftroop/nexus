@@ -54,12 +54,9 @@ export default class RemoteService extends Service {
 			// callable on the service and assign it a proxy function to
 			// parse/normalize/check all the necessary information before
 			// calling the corresponding CRUD method.
-			this[_path.replace("/", "_")] = (...args) => {
+			this[_path.replace("/", "_")] = ((method, req, res) => {
 
 				// TODO handle exceptions. min 2 args, max 3
-				let last = args.length - 1,
-					method = args[0],
-					res = args[last];
 
 				// Check to see if the service API defined the method for the
 				// url
@@ -69,19 +66,17 @@ export default class RemoteService extends Service {
 
 				// Assign the response callback function to the last index
 				// of args.
-				args[last] = (response) => {
+				// Build the fully qualified url for the request against the
+				// remote service
+				let cb = function(response) {
 					res.status = response.statusCode;
 					// TODO headers, body, cookies, etc?
 					res.send(); // TODO
-				}
-
-				// Build the fully qualified url for the request against the
-				// remote service
-				url = this.url + ensureForwardSlash(_path);
+				}, url = (this.url + ensureForwardSlash(_path));
 
 				// Call the cooresponding method with the modified args array
-				return this[method](...args);
-			}
+				return this[method](url, req, cb);
+			});
 		}
 	}
 
@@ -93,9 +88,9 @@ export default class RemoteService extends Service {
 		// TODO check for protocol?
 		// TODO modify for websockets??
 		if (this._root == null) {
-			return this._address
+			return this._address;
 		} else {
-			return this._address + ensureForwardSlash(this._root);
+			return (this._address + ensureForwardSlash(this._root));
 		}
 	}
 
@@ -105,7 +100,7 @@ export default class RemoteService extends Service {
 	 * @param  {Function} callback [description]
 	 * @return {[type]}            [description]
 	 */
-	del(url, callback) {
+	del(url, req, callback) {
 		request.del(url).on("response", callback);
 	}
 
@@ -115,8 +110,8 @@ export default class RemoteService extends Service {
 	 * @param  {Function} callback [description]
 	 * @return {[type]}            [description]
 	 */
-	get(url, callback) {
-		request.get(url).on("response", callback);;
+	get(url, req, callback) {
+		request.get(url).on("response", callback);
 	}
 
 	/**
@@ -126,7 +121,8 @@ export default class RemoteService extends Service {
 	 * @param  {Function} callback [description]
 	 * @return {[type]}            [description]
 	 */
-	patch(url, body, callback) {
+	patch(url, req, callback) {
+		// TODO get body
 		request.patch({
 			body: body
 		}).on("response", callback);
@@ -139,7 +135,8 @@ export default class RemoteService extends Service {
 	 * @param  {Function} callback [description]
 	 * @return {[type]}            [description]
 	 */
-	post(url, body, callback) {
+	post(url, req, callback) {
+		// TODO get body
 		request.post({
 			body: body
 		}).on("response", callback);
@@ -152,7 +149,8 @@ export default class RemoteService extends Service {
 	 * @param  {Function} callback [description]
 	 * @return {[type]}            [description]
 	 */
-	put(url, body, callback) {
+	put(url, req, callback) {
+		// TODO get body
 		request.put({
 			body: body
 		}).on("response", callback);
@@ -163,12 +161,13 @@ export default class RemoteService extends Service {
 	 * @return {[type]} [description]
 	 */
 	toJSON() {
+		let _url = this.url;
 		return _.extend(
-			super(),
+			super.toJSON(),
 			{
 				address: this._address,
 				root: this._root,
-				url: this.url(),
+				url: _url,
 				api: this.api
 			}
 		);
@@ -185,7 +184,10 @@ export default class RemoteService extends Service {
 	  */
 	 _getMethods(props) {
 	 	let _methods = props.method;
-	 	_methods = _.isString(_methods) ? _methods.split(" ") : _methods;
+	 	if (_.isString(_methods)) {
+	 		_methods = _methods.split(" ");
+	 	}
+
 	 	if (!_.isArray(_methods)) {
 	 		throw new ServiceException(CODES.INVALID_TYPE, "method", "string or array");
 	 	}

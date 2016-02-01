@@ -11,6 +11,7 @@ export default class INexusController extends Object {
 	 * @return {[type]}     [description]
 	 */
 	constructor(app) {
+		super();
 		this.app = app;
 		this.logger = process.env.logger;
 	}

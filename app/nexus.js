@@ -51,8 +51,8 @@ export default class Nexus {
 	 */
 	configure(options) {
 
-		let loggingEnabled = _.has(options, "logging") ? options.logging || this._config.get("logging"),
-			staticEnabled = _.has(options, "static") ? options.static || this._config.get("static");
+		let loggingEnabled = _.has(options, "logging") ? options.logging : this._config.get("logging"),
+			staticEnabled = _.has(options, "static") ? options.static : this._config.get("static");
 
 		loggingEnabled && this._configureLogging(options);
 		staticEnabled && this._configureStatic(options);

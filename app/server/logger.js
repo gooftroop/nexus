@@ -16,8 +16,9 @@ export default class Logger extends winston.Logger {
 	 */
 	constructor(options) {
 		if (process.env.logger == null) {
+			super();
 			this.init(options);
-			process.env.logger = super(this.configuredLoggers);
+			this.configure(this.configuredLoggers);
 		}
 		return process.env.logger;
 	}

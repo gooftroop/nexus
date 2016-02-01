@@ -148,21 +148,9 @@ export default class ServicesController extends INexusController {
 			// Replace all '/' with '_' in the fragment and call the method on
 			// services
 			let fragment = req.params.fragment.replace("/", "_"),
-				body = {},
-				method = req.method, // TODO correct?
-				args = [];
+				method = req.method; // TODO correct?
 
-			args[0] = method;
-			// TODO there's probably a better way to build these args...
-			// it's too bad es6 doesn't have constructor overloading :(
-			if (method == "get") { // TODO make constant and ignore case
-				args[2] = res;
-			} else {
-				args[1] = body;
-				args[2] = res;
-			}
-
-			service[fragment](...args);
+			service[fragment](method, req, res);
 		});
 	}
 

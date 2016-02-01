@@ -1,7 +1,7 @@
 "use strict";
 
 import _ from "lodash";
-import CODES form "app/shared/error/codes.js";
+import CODES from "app/shared/error/codes.js";
 import { IllegalArgumentException } from "app/shared/error/exceptions.js";
 
 /**

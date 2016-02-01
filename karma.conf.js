@@ -3,37 +3,16 @@ module.exports = (config) => {
     'use strict';
     config.set({
         autoWatch: true,
-        singleRun: true,
-        frameworks: ['jspm', 'jasmine'],
-        jspm: {
-            config: 'config.js',
-            loadFiles: [
-                'spec/**/*.spec.js'
-            ],
-            serveFiles: [
-                'app/**/*.js'
-            ],
-            useBundles: true,
-            stripExtension: false
-        },
-        browsers: ['PhantomJS'],
-        reporters: ['progress'],
-        files: [
-            'node_modules/karma-babel-preprocessor/node_modules/babel-core/browser-polyfill.js'
-        ],
-        preprocessors: {
-            'app/**/*.js': ['babel', 'sourcemap', 'coverage']
-        },
         babelPreprocessor: {
             options: {
-                sourceMap: 'inline',
-                blacklist: ['useStrict']
+                sourceMap: 'inline'
             },
             sourceFileName: function(file) {
                 return file.originalPath;
             }
         },
-        reporters: ['coverage', 'progress'],
+        basePath: __dirname,
+        browsers: ['PhantomJS'],
         coverageReporter: {
             instrumenters: {
                 isparta: require('isparta')
@@ -50,6 +29,26 @@ module.exports = (config) => {
                     dir: 'coverage/',
                 }
             ]
-        }
+        },
+        frameworks: ['jspm', 'jasmine'],
+        logLevel: config.LOG_INFO,
+        jspm: {
+            config: 'config.js',
+            loadFiles: [
+                '/spec/**/*.spec.js'
+            ],
+            packages: "jspm_packages/",
+            serveFiles: [
+                '/app/**/*.js'
+            ],
+            stripExtension: false,
+            useBundles: false
+        },
+        preprocessors: {
+            'app/**/*.js': ['babel', 'sourcemap', 'coverage']
+        },
+        //plugins: ['karma-jspm', 'karma-phantomjs-launcher'],
+        reporters: ['coverage', 'progress'],
+        singleRun: true,
     });
 };

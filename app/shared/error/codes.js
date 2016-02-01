@@ -7,26 +7,30 @@
 const DEFAULT_MESSAGE = "";
 const DEFAULT_ERROR_CODE = 0;
 const DEFAULT_HTTP_ERROR_STATUS = 500;
-
 const CODES = {
 	DEFAULT: {
 		code: 0,
 		status: 500,
 		message: function(arg) {
-			return "This is a very unhelpful error message...apparently something bad happened. Please contact your " +
-					"Systems Administrator for more information" + (arg != null) ? ". (" + arg + ")" : ".";
+			return "This is a very unhelpful error message...apparently something bad happened. Please contact your "
+					+ "Systems Administrator for more information"
+					+ ((arg != null) ? (". (" + arg + ")") : ".");
+		}
 	},
 	ILLEGAL_ARGUMENT: {
 		code: 1,
 		status: 400,
 		message: function(arg1, arg2) {
-			return "Illegal argument '" + arg1 + "'" + (arg2 != null) ? ". " + arg2 : ".";
+			return "Illegal argument '"
+					+ arg1
+					+ "'"
+					+ ((arg2 != null) ? (". " + arg2) : ".");
 		}
 	},
 	REQUIRED_PARAMETER: {
 		code: 2,
 		status: 400,
-		message: fucntion(arg) {
+		message: function(arg) {
 			return arg + " is required.";
 		}
 	},
@@ -34,7 +38,7 @@ const CODES = {
 		code: 3,
 		status: 400,
 		message: function(arg1, arg2) {
-			return  arg1 " must be of type " + arg2;
+			return arg1 + " must be of type " + arg2;
 		}
 	},
 	SERVICE_NOT_FOUND: {
@@ -55,12 +59,18 @@ const CODES = {
 		code: 102,
 		status: 404,
 		message: function(method, url, name) {
-			return "Method '" + method + "' for url '" + url + "' is not supported by the service '" + name "'."
+			return "Method '"
+					+ method
+					+ "' for url '"
+					+ url
+					+ "' is not supported by the service '"
+					+ name
+					+ "'.";
 		}
 	}
 };
 
+export { DEFAULT_MESSAGE };
+export { DEFAULT_ERROR_CODE };
+export { DEFAULT_HTTP_ERROR_STATUS };
 export default CODES;
-export DEFAULT_MESSAGE;
-export DEFAULT_ERROR_CODE;
-export DEFAULT_HTTP_ERROR_STATUS;
