@@ -1,42 +1,48 @@
 /**
  * Default configurations
+ *
+ * By default, HTTP is used. If HTTPS is used, then the 'ssl' configuration is used.
+ * For SSL configuration, read:
+ * https://nodejs.org/api/tls.html#tls_tls_createserver_options_secureconnectionlistener
  */
 {
-	"server": {
-		"backlog": 511,
-		"debug": true,
-		"discovery": true,
-		"hostname": "localhost",
-		"logging": true,
-		"port": 8080,
-		"static": true,
-		"staticRoot": "public"
-	},
+	"backlog": 511,
+	"debug": true,
+	"discovery": true,
+	"hostname": "localhost",
+	"logging": true,
+	"port": 8080,
+	"root": "",
+	"static": true,
+	"staticRoot": "{root}/public",
+	"protocol": "http",
+	"ssl": {},
 	"logging": {
+		"root": "{root}/logs",
 		"handlers": {
 			"console": {
 				"transport": "winston.transports.Console",
 				"handleExceptions": true,
 				"humanReadableUnhandledException": true,
-			    "json": false,
-			    "colorize": true
+				"json": false,
+				"colorize": true
 			},
 			"defaultFileHandler": {
 				"transport": "winston.transports.File",
-				"filename": "log/nexus.out",
-		        "handleExceptions": true,
-		        "humanReadableUnhandledException": true,
-		        "json": true,
-		        "maxsize": 5242880,  // 5MB
-		        "maxFiles": 5,
-		        "colorize": false
+				"filename": "nexus.out",
+				"handleExceptions": true,
+				"humanReadableUnhandledException": true,
+				"json": true,
+				"maxsize": 5242880, // 5MB
+				"maxFiles": 5,
+				"colorize": false
 			}
 		},
 		"loggers": {
 			"debug": {
 				"level": "debug",
 				"name": "debug",
-				"handler": "console"
+				"handler": "defaultFileHandler"
 			},
 			"verbose": {
 				"level": "verbose",

@@ -1,8 +1,8 @@
 "use strict";
 
 import _ from "lodash";
-import CODES from "app/shared/error/codes.js";
-import { IllegalArgumentException } from "app/shared/error/exceptions.js";
+import CODES from "~/error/codes";
+import { IllegalArgumentException } from "~/error/exceptions";
 
 /**
  * Model representation of a remote service

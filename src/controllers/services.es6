@@ -1,12 +1,13 @@
 "use strict";
 
 import _ from "lodash";
+import polo from "polo";
 import request from "request";
-import INexusController from "app/shared/controllers/base.js";
-import CODES from "app/shared/error/codes.js";
-import { IllegalArgumentException } from "app/shared/error/exceptions.js";
-import Registry from "app/services/registry.js";
-import RemoteService from "app/services/models/remoteService.js"
+import INexusController from "~/controllers/base";
+import CODES from "~/error/codes";
+import { IllegalArgumentException } from "~/error/exceptions";
+import Registry from "~/registry";
+import RemoteService from "~/models/remoteService"
 
 /**
  * Proxy request syntax:
@@ -44,7 +45,9 @@ export default class ServicesController extends INexusController {
 	 * @return {[type]}         [description]
 	 */
 	set services(service) {
-		this.register(service);
+		// Create a LocalService?
+		// Make available on LAN via zero-confg
+		this.register(name, service);
 	}
 
 	/**
@@ -52,9 +55,9 @@ export default class ServicesController extends INexusController {
 	 * @return {[type]} [description]
 	 */
 	bind() {
-		this.app.get("/services/:name", this._proxyServices);
-		this.app.post("/services/register/:name", this._proxyRegister);
-		this.app.post("/services/unregister/:name", this._proxyUnregister);
+		this.app.get("/services/:name", _.bind(this._proxyServices, this));
+		this.app.post("/services/register/:name", _.bind(this._proxyRegister, this));
+		this.app.post("/services/unregister/:name", _.bind(this._proxyUnregister, this));
 	}
 
 	/**
@@ -63,7 +66,7 @@ export default class ServicesController extends INexusController {
 	 */
 	init() {
 
-		this._registry = Registry();
+		this._registry = new Registry();
 		this._services = polo();
 
 		// Configure Polo events
@@ -71,7 +74,7 @@ export default class ServicesController extends INexusController {
 			// TODO what is service?
 			// TODO might need a way to ask this service for it's api...
 			console.log(service);
-			this.register(name, service);
+			this._register(name, service);
 		});
 
 		this._services.on("down", function(name, service) {
@@ -106,14 +109,16 @@ export default class ServicesController extends INexusController {
 		return service;
 	}
 
+
 	/**
 	 * [unregister description]
 	 * @param  {[type]} name [description]
-	 * @return {[type]}         [description]
+	 * @return {[type]}      [description]
 	 */
 	unregister(name) {
 		this._registry.remove(name);
-		// TODO remove from polo
+		// Remove from polo
+		this._services.repo.pop(name);
 	}
 
 	/**************************************************************************
@@ -187,11 +192,7 @@ export default class ServicesController extends INexusController {
 	_proxyServices(req, res) {
 		try {
 			let service = this.services(req.name);
-			if (_.isArray(service)) {
-				res.send(JSON.stringify(service));
-			} else {
-				res.send(JSON.stringify(service));
-			}
+			res.send(JSON.stringify(service));
 		} catch (e) {
 			res.status(e.status).send(JSON.stringify(e));
 		}
@@ -242,9 +243,8 @@ export default class ServicesController extends INexusController {
 			throw new IllegalArgumentException(CODES.INVALID_TYPE, "name", "string");
 		}
 
-		polo.add({
+		this._services.add({
 			name: name,
-			// TODO need host?
 			port: this.app.address().port
 		});
 	}

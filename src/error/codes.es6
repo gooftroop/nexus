@@ -4,7 +4,7 @@
  * Core & Application-specific exception code enums
  */
 
-const DEFAULT_MESSAGE = "";
+const DEFAULT_MESSAGE = "An error occurred while processing your request";
 const DEFAULT_ERROR_CODE = 0;
 const DEFAULT_HTTP_ERROR_STATUS = 500;
 const CODES = {
@@ -39,6 +39,25 @@ const CODES = {
 		status: 400,
 		message: function(arg1, arg2) {
 			return arg1 + " must be of type " + arg2;
+		}
+	},
+	UNEXPECTED_VALUE: {
+		code: 4,
+		status: 500,
+		message: function(variable, actual, expected) {
+			return "Variable '" + variable + "'" +
+				   (
+						expected != null ?
+						": Expected '" + expected + "'; found '" + actual + "' instead" :
+						" contains unexpected value: " + actual
+					);
+		}
+	},
+	RESOURCE_NOT_FOUND: {
+		code: 5,
+		status: 400,
+		message: function(name, value) {
+			return "Could not find " + name + " (value: '" + value + "')";
 		}
 	},
 	SERVICE_NOT_FOUND: {

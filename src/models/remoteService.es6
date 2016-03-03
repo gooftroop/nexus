@@ -2,10 +2,10 @@
 
 import _ from "lodash";
 import request from "request";
-import Service from "./service.js";
-import { ServiceException, IllegalArgumentException } from "app/shared/error/exceptions.js";
-import CODES from "app/shared/error/codes.js";
-import { ensureForwardSlash } from "app/shared/utils.js";
+import Service from "./service";
+import { ServiceException, IllegalArgumentException } from "~/error/exceptions";
+import CODES from "~/error/codes";
+import { ensureForwardSlash } from "~/utils";
 
 /**
  *
@@ -183,15 +183,15 @@ export default class RemoteService extends Service {
 	  * @return {[type]}       [description]
 	  */
 	 _getMethods(props) {
-	 	let _methods = props.method;
-	 	if (_.isString(_methods)) {
-	 		_methods = _methods.split(" ");
-	 	}
+		let _methods = props.method;
+		if (_.isString(_methods)) {
+			_methods = _methods.split(" ");
+		}
 
-	 	if (!_.isArray(_methods)) {
-	 		throw new ServiceException(CODES.INVALID_TYPE, "method", "string or array");
-	 	}
-	 	return _methods;
+		if (!_.isArray(_methods)) {
+			throw new ServiceException(CODES.INVALID_TYPE, "method", "string or array");
+		}
+		return _methods;
 	 }
 
 	 /**
@@ -200,8 +200,8 @@ export default class RemoteService extends Service {
 	  * @return {[type]}         [description]
 	  */
 	 _validateAddress(address) {
-	 	// TODO validate
-	 	return address;
+		// TODO validate
+		return address;
 	 }
 
 	 /**
@@ -210,10 +210,10 @@ export default class RemoteService extends Service {
 	  * @return {[type]}     [description]
 	  */
 	 _validateApi(api) {
-	 	if (!_.isObject(api)) {
+		if (!_.isObject(api)) {
 			throw new IllegalArgumentException(CODES.INVALID_TYPE, "api", "object");
 		}
-	 	return api;
+		return api;
 	 }
 
 	 /**
@@ -222,9 +222,9 @@ export default class RemoteService extends Service {
 	  * @return {[type]}      [description]
 	  */
 	 _validateRoot(root) {
-	 	if (!_.isString(root)) {
+		if (!_.isString(root)) {
 			throw new IllegalArgumentException(CODES.INVALID_TYPE, "root", "string");
 		}
-	 	return root;
+		return root;
 	 }
 }
