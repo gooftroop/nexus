@@ -1,9 +1,11 @@
 {
   "plugins": [
     "transform-es2015-modules-umd",
+    "check-es2015-constants",
     ["babel-root-import", {
       "rootPathSuffix": "src"
     }]
   ],
-  "presets": ["es2015"]
+  "presets": ["es2015", "stage-0"],
+  "sourceMaps": true,
 }

@@ -19,10 +19,10 @@
 	"ssl": {},
 	"logging": {
 		"root": "{root}/logs",
-		"handlers": {
+		"level": "debug",
+		"transports": {
 			"console": {
 				"transport": "winston.transports.Console",
-				"handleExceptions": true,
 				"humanReadableUnhandledException": true,
 				"json": false,
 				"colorize": true
@@ -30,39 +30,25 @@
 			"defaultFileHandler": {
 				"transport": "winston.transports.File",
 				"filename": "nexus.out",
-				"handleExceptions": true,
 				"humanReadableUnhandledException": true,
-				"json": true,
+				"json": false,
 				"maxsize": 5242880, // 5MB
 				"maxFiles": 5,
 				"colorize": false
 			}
 		},
 		"loggers": {
-			"debug": {
-				"level": "debug",
-				"name": "debug",
-				"handler": "defaultFileHandler"
-			},
-			"verbose": {
+			"nexus": {
 				"level": "verbose",
-				"name": "verbose",
-				"handler": "defaultFileHandler"
+				"transports": "defaultFileHandler"
 			},
-			"info": {
-				"level": "info",
-				"name": "info",
-				"handler": "defaultFileHandler"
+			"services": {
+				"level": "verbose",
+				"transports": "defaultFileHandler"
 			},
-			"warn": {
-				"level": "warn",
-				"name": "warn",
-				"handler": "defaultFileHandler"
-			},
-			"error": {
-				"level": "error",
-				"name": "error",
-				"handler": "defaultFileHandler"
+			"registry": {
+				"level": "verbose",
+				"transports": "defaultFileHandler"
 			}
 		}
 	}

@@ -1,9 +1,16 @@
 "use strict";
 
+// Third-party imports
 import _ from "lodash";
-import config from "config";
 import path from "path";
+import config from "config";
 
+// App imports
+import Logger from "~/logger";
+import { DEFAULT_HTTP_ERROR_STATUS } from "~/error/codes";
+import HttpException from "~/error/exceptions";
+
+// Constants
 const BEGIN_VARIABLE_DELIM = "{";
 const END_VARIABLE_DELIM = "}";
 const VARIABLE_REGEX = new RegExp(
@@ -13,7 +20,7 @@ const VARIABLE_REGEX = new RegExp(
     BEGIN_VARIABLE_DELIM +
     "]+\\" +
     END_VARIABLE_DELIM +
-    ")", "g");
+    ")", "gmi");
 
 /**
  * [ensureForwardSlash description]
@@ -24,12 +31,26 @@ export function ensureForwardSlash(string) {
     return _.startswith(string, "/") ? string : ("/" + string);
 }
 
+/**
+ * [resolveVariables description]
+ * @param  {[type]} string [description]
+ * @return {[type]}        [description]
+ */
 export function resolveVariables(string) {
-    let i, len, variables, variable, cleanedVariable, value;
+    let i,
+        len,
+        variables,
+        variable,
+        cleanedVariable,
+        value;
 
     // Check the string for any variable
     // A variable beings with { and ends with }
     variables = VARIABLE_REGEX.exec(string);
+
+    // Reset the REGEX object
+    VARIABLE_REGEX.lastIndex = 0;
+
     if (variables == null) {
         return string;
     }
@@ -45,6 +66,12 @@ export function resolveVariables(string) {
     return string;
 }
 
+/**
+ * [resolvePath description]
+ * @param  {[type]} _path [description]
+ * @param  {[type]} root  [description]
+ * @return {[type]}       [description]
+ */
 export function resolvePath(_path, root) {
     let index, end, variable, value;
     if (root == null) {
@@ -60,6 +87,34 @@ export function resolvePath(_path, root) {
     if (!_path.match(/^\.?\/.*$/i)) {
         _path = path.join(root, _path);
     }
-
     return _path;
+}
+
+/**
+ * [sendError description]
+ * @param  {[type]} err [description]
+ * @param  {[type]} res [description]
+ * @return {[type]}     [description]
+ */
+export function sendError(err, res) {
+    // TODO Why do we have to ref 'default' here, but not in other files???
+    let logger = Logger.default.getLogger("nexus"),
+        status = DEFAULT_HTTP_ERROR_STATUS,
+        report = ": " + err.message,
+        msg = {
+            message: err.message
+        };
+
+    if (err instanceof HttpException || _.has(err, "status")) {
+        status = err.status;
+        msg.code = err.code;
+        report = " -- (CODE: " + err.code + "; STATUS: " + status + ") " + report;
+    }
+
+    if (_.has(err, "stack")) {
+        report += ("." + err.stack);
+    }
+
+    logger.error("Error" + report);
+    res.status(status).send(msg);
 }

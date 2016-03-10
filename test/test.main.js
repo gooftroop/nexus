@@ -17,20 +17,11 @@ chai.config.includeStack = true;
  * and started correctly
  */
 
-before(function() {
-    this.nexus = new Nexus();
-});
-
-after(function() {
-    if (this.nexus) {
-        this.nexus.stop();
-    }
-});
-
 /**
  * TODO
  * 1. The default.json file should have no additional logging defined. We need to first fix that
  *    then create tests that verify several logging configurations.
+ *    After these tests, ALL tests should log to a test log.
  * 2. Test creating logging resources dirs automatically (i.e. logs/ for file logging)
  * 3. Create tests that verify various logging configurations, including:
  *     - Loading configs based on environment type (NODE_ENV)
@@ -53,6 +44,16 @@ after(function() {
  */
 
 describe("Core server functionality", function() {
+
+    before(function() {
+        this.nexus = new Nexus();
+    });
+
+    after(function(done) {
+        if (this.nexus) {
+            this.nexus.destroy(done);
+        }
+    });
 
     it("tests that nexus can be started successfully", function(done) {
         expect(this.nexus).not.to.be.undefined;

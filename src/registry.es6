@@ -1,6 +1,7 @@
 "use strict";
 
 import _ from "lodash";
+import Logger from "~/logger";
 import CODES from "~/error/codes";
 import { IllegalArgumentException } from "~/error/exceptions";
 
@@ -14,7 +15,25 @@ export default class ServiceRegistry {
 	 * @return {[type]} [description]
 	 */
 	constructor() {
-		this._registry = {};
+		this.services = {};
+		this.logger = Logger.getLogger("registry");
+	}
+
+	/**
+	 * [contains description]
+	 * @param  {[type]} name [description]
+	 * @return {[type]}      [description]
+	 */
+	contains(name) {
+		return _.has(this.services, name);
+	}
+
+	/**
+	 * [destroy description]
+	 * @return {[type]} [description]
+	 */
+	destroy() {
+		// TODO hook destroy event to every service through 'set'. emit destroy
 	}
 
 	/**
@@ -27,7 +46,15 @@ export default class ServiceRegistry {
 			throw new IllegalArgumentException(CODES.REQUIRED_PARAMETER, "name");
 		}
 
-		return this._registry[name];
+		if (!_.isString(name)) {
+			throw new IllegalArgumentException(CODES.ILLEGAL_ARGUMENT, "name", "Service name must be a string");
+		}
+
+		if (!this.contains(name)) {
+			throw new IllegalArgumentException(CODES.ILLEGAL_SERVICE_NAME, "name");
+		}
+
+		return this.services[name];
 	}
 
 	/**
@@ -49,12 +76,11 @@ export default class ServiceRegistry {
 		}
 
 		// TODO check service type?
-
-		this._registry[name] = serivce;
+		this.services[name] = service;
 	}
 
 	all() {
-		return _.values(this._registry);
+		return _.values(this.services);
 	}
 
 	/**
@@ -67,10 +93,10 @@ export default class ServiceRegistry {
 			throw new IllegalArgumentException(CODES.REQUIRED_PARAMETER, "name");
 		}
 
-		if (!_.has(this._registry, name)) {
+		if (!_.has(this.services, name)) {
 			throw new RegistryError(CODES.SERVICE_NOT_FOUND, name);
 		}
 
-		this._registry[name] == void 0;
+		this.services[name] == void 0;
 	}
 }

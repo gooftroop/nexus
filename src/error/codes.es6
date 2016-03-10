@@ -44,8 +44,8 @@ const CODES = {
 	UNEXPECTED_VALUE: {
 		code: 4,
 		status: 500,
-		message: function(variable, actual, expected) {
-			return "Variable '" + variable + "'" +
+		message: function(variable, expected, actual) {
+			return "'" + variable + "'" +
 				   (
 						expected != null ?
 						": Expected '" + expected + "'; found '" + actual + "' instead" :
@@ -53,11 +53,32 @@ const CODES = {
 					);
 		}
 	},
-	RESOURCE_NOT_FOUND: {
+	NOT_FOUND: {
 		code: 5,
 		status: 400,
 		message: function(name, value) {
 			return "Could not find " + name + " (value: '" + value + "')";
+		}
+	},
+	ILLEGAL_STATE: {
+		code: 6,
+		status: 500,
+		message: function(expected, actual) {
+			return "Invalid state. Expected to be in state " + expected + ", but is is " + actual;
+		}
+	},
+	UNEXPECTED_STATE: {
+		code: 6,
+		status: 500,
+		message: function(expected, actual) {
+			return "Invalid state. Expected to not be in state " + expected;
+		}
+	},
+	DUPLICATE_CONTROLLER: {
+		code: 50,
+		status: 400,
+		message: function(name) {
+			return "Controller '" + name + "' is already attached"
 		}
 	},
 	SERVICE_NOT_FOUND: {
@@ -70,8 +91,8 @@ const CODES = {
 	ILLEGAL_SERVICE_NAME: {
 		code: 101,
 		status: 400,
-		message: function(arg) {
-			return arg + " must be a valid service name";
+		message: function(arg1, arg2) {
+			return arg1 + " must be a valid service name" + (arg2 != null ? " (" + arg2 + ")" : "");
 		}
 	},
 	METHOD_NOT_SUPPORTED: {

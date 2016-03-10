@@ -15,6 +15,7 @@ export default class HttpException extends Error {
         super(message);
         this.message = message;
         this.status = status;
+        Error.captureStackTrace(this, this.constructor.name);
     }
 
     /**
@@ -22,7 +23,6 @@ export default class HttpException extends Error {
      * @return {[type]} [description]
      */
     toJSON() {
-        console.log("HttpException toJSON");
         return {
             status: this.status,
             message: this.message
@@ -56,13 +56,11 @@ class NexusException extends HttpException {
 
         super(message, status);
         this.code = code;
+        Error.captureStackTrace(this, this.constructor.name);
     }
 
     toJSON() {
-        console.log("NexusException toJSON");
         let orig = super.toJSON();
-        console.log("orig is: ");
-        console.log(orig);
         return _.extend(orig, {
             code: this.code
         });
@@ -89,6 +87,25 @@ class IllegalArgumentException extends NexusException {
 }
 
 export { IllegalArgumentException };
+
+/**
+ *
+ */
+class IllegalStateException extends NexusException {
+
+    /**
+     * [constructor description]
+     * @param  {...[type]} args [description]
+     * @return {[type]}         [description]
+     */
+    constructor(...args) {
+        super(...args);
+        this.name = this.constructor.name;
+        Error.captureStackTrace(this, this.constructor.name);
+    }
+}
+
+export { IllegalStateException };
 
 /**
  *

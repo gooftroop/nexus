@@ -1,5 +1,7 @@
 "use strict";
 
+import Logger from "~/logger";
+
 /**
  *
  */
@@ -12,7 +14,15 @@ export default class INexusController {
      */
     constructor(app) {
         this.app = app;
-        this.logger = process.env.logger;
+        this.logger = Logger.getLogger("serivces");
+    }
+
+    /**
+     * [destroy description]
+     * @return {[type]} [description]
+     */
+    destroy() {
+        // nothing
     }
 
     /**
