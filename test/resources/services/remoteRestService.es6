@@ -47,6 +47,10 @@ export default class RemoteRestService {
         });
     }
 
+    uri() {
+        return this.server.info.uri;
+    }
+
     start() {
         this.server.start((err) => {
             if (err) {

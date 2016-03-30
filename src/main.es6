@@ -4,7 +4,7 @@
 process.env.ALLOW_CONFIG_MUTATIONS = true;
 
 // Setup regenerator runtime and core.js polyfill
-import "babel-polyfill";
+import polyfill from "babel-polyfill";
 
 // Third-party imports
 import _ from "lodash";
@@ -20,14 +20,15 @@ import cookieParser from "cookie-parser";
 
 // App imports
 import Logger from "~/logger";
-import ServicesController from "~/controllers/services";
+import Doodad from "~/lib/doodad";
+import INexusController from "~/controllers/base";
 import {
 	resolvePath,
-	sendError
+	sendHttpError
 }
 from "~/utils";
-import {
-	NexusException, ImproperlyConfiguredException, IllegalStateException
+import NexusException, {
+	ImproperlyConfiguredException, IllegalStateException
 }
 from "~/error/exceptions";
 import CODES from "~/error/codes";
@@ -59,11 +60,30 @@ const STATES = {
 /**
  *
  */
-export default class Nexus {
+export default class Nexus extends Doodad {
 	// TODO don"t forget to set NODE_ENV
-	// TODO is it possible to do sub routing in express?
 	// TODO can node-config do config loading conditional on NODE_ENV?
-	// TODO convert variables meant to be private to use Symbol
+	// TODO --keep-fnames for ugligy for use with constructor.name
+	// TODO figure out how to handle uncaught exceptions! And for returning them to the right caller
+
+	// TODO convert these when the proposed spec for private fields is integrated into Babel
+	app = null;
+
+	// Attached Conroller mapping
+	controllers = {};
+
+	// Internal State
+	_state = STATES.IDLE;
+
+	// Logger
+	logger = null;
+
+	// Initialize config
+	// Retrieve the "nexus" configuration object
+	config = config.get("nexus");
+
+	// TCP Server
+	server = null;
 
 	/**
 	 * [constructor description]
@@ -72,14 +92,7 @@ export default class Nexus {
 	 */
 	constructor(options = {}) {
 
-		// Prime the internal state
-		this._state = STATES.IDLE;
-
-		// Initialize config
-		// Retrieve the "root" configuration object
-		this.config = config;
-
-		this._controllers = {};
+		super();
 
 		// Begin server configuration
 		this._configurePaths(options);
@@ -93,8 +106,23 @@ export default class Nexus {
 		this._configureStatic(options);
 		this._middleware(options);
 		this._bind();
+	}
 
-		this.attach("services", ServicesController);
+	/**
+	 * [state description]
+	 * @return {[type]} [description]
+	 */
+	get state() {
+		return this._state;
+	}
+
+	/**
+	 * [setState description]
+	 * @param {[type]} value [description]
+	 */
+	set state(value) {
+		this._state = _.isString(value) ? STATES[value] : value;
+		this.emit(STATES.reverse(this._state));
 	}
 
 	/**
@@ -103,18 +131,37 @@ export default class Nexus {
 	 * @return {[type]}            [description]
 	 */
 	attach(name, Controller) {
-		// TODO throw exception if already instantiated?
-		// TODO bind controller to events! rather than explicitly call destroy, i.e.
-		if (_.has(this, name)) {
+		// TODO check if instantied?
+		if (this.state > 2) {
+			throw new NexusException(CODES.CANNOT_ATTACH_CONTROLLER, STATES.reverse(this.state));
+		}
+
+		if (_.has(this._controllers, name)) {
 			throw new NexusException(CODES.DUPLICATE_CONTROLLER, name);
 		}
-		this[name] = this._controllers[name] = new Controller(this.app);
+
+		let controller;
+		if (!(Controller instanceof INexusController)) {
+			controller = new Controller(this.app);
+			if (!(controller instanceof INexusController)) {
+				throw new IllegalArgumentException(CODES.INVALID_TYPE, "Controller", "INexusController");
+			}
+		} else {
+			controller = Controller;
+		}
+
+		this.once("destroy", controller.destroy);
+		this.controllers[name] = controller;
 		this.logger.info("Attached controller " + name);
+		return this;
 	}
 
+	/**
+	 * [destroy description]
+	 * @param  {Function} callback [description]
+	 * @return {[type]}            [description]
+	 */
 	destroy(callback) {
-
-		// TODO hook logger, controllers into events and destroy them by triggering 'destroy' event
 
 		if (this.state == STATES.DESTROYING) {
 			this.logger.error("Cannot destroy app - app is already beging destroyed");
@@ -126,49 +173,31 @@ export default class Nexus {
 			return;
 		}
 
+		super.destroy();
+
+		// TODO close stream when available
 		this.stop(() => {
 			this.logger.info("Destroying server...");
 			this.state = STATES.DESTROYING;
-
 			this._removeEventListeners();
-			this._destroyControllers();
-			this._destroyApp();
 			this.state = STATES.DESTROYED;
 			this.logger.info("Server destroyed");
 			callback && callback();
 			this._destroyLogger();
+			Nexus.app = null;
 		});
 	}
 
 	/**
-	 * [run description]
-	 * @return {[type]} [description]
+	 * [get description]
+	 * @param  {[type]} name [description]
+	 * @return {[type]}      [description]
 	 */
-	run(callback) {
-
-		if (this.state != STATES.INITIALIZED) {
-			this.logger.error("Cannot start app - app is not in a good place mentally or emotionally for this commitment");
-			throw new IllegalStateException(CODES.ILLEGAL_STATE, "INITIALIZED", STATES.reverse(this.state));
+	get(name) {
+		if (!_.has(this.controllers, name)) {
+			throw new IllegalArgumentException(CODES.NOT_FOUND, "controller", name);
 		}
-
-		this.logger.info("Starting server...");
-		try {
-			this.server = this._createTCPServer(callback);
-		} catch (e) {
-			this.logger.error("Failed to start TCP server!");
-			sendError(e);
-			process.exit(-1);
-		}
-
-		try {
-			this.stream = this._createWebsocketServer();
-		} catch (e) {
-			this.logger.error("Failed to start Websockets server!");
-			sendError(e);
-			process.exit(-1);
-		}
-
-		this.state = STATES.RUNNING;
+		return this.controllers[name];
 	}
 
 	/**
@@ -188,6 +217,7 @@ export default class Nexus {
 		// Instantiate the express server
 		this.app = express();
 
+		// Set configuraiton options. Make them availabel at a top-level
 		this.protocol = options.protocol || this.config.get("protocol");
 		this.app.set("protocol", this.protocol);
 		this.hostname = options.hostname || this.config.get("hostname");
@@ -201,19 +231,46 @@ export default class Nexus {
 	}
 
 	/**
-	 * [state description]
-	 * @return {[type]} [description]
+	 * [remove description]
+	 * @param  {[type]} name [description]
+	 * @return {[type]}      [description]
 	 */
-	get state() {
-		return this._state;
+	remove(name) {
+		let controller = this.get(name);
+		this.removeListener("destroy", controller);
+		delete this.controllers[name];
+		return controller;
 	}
 
 	/**
-	 * [setState description]
-	 * @param {[type]} value [description]
+	 * [run description]
+	 * @return {[type]} [description]
 	 */
-	set state(value) {
-		this._state = _.isString(value) ? STATES[value] : value;
+	run(callback) {
+
+		if (this.state != STATES.INITIALIZED) {
+			this.logger.error("Cannot start app - app is not in a good place mentally or emotionally for this commitment");
+			throw new IllegalStateException(CODES.ILLEGAL_STATE, "INITIALIZED", STATES.reverse(this.state));
+		}
+
+		this.logger.info("Starting server...");
+		try {
+			this.server = this._createTCPServer(callback);
+		} catch (e) {
+			this.logger.error("Failed to start TCP server!");
+			sendHttpError(e);
+			process.exit(-1);
+		}
+
+		try {
+			this.stream = this._createWebsocketServer();
+		} catch (e) {
+			this.logger.error("Failed to start Websockets server!");
+			sendHttpError(e);
+			process.exit(-1);
+		}
+
+		this.state = STATES.RUNNING;
 	}
 
 	/**
@@ -248,7 +305,8 @@ export default class Nexus {
 	 * @return {[type]}         [description]
 	 */
 	use(...args) {
-		return this.app.use(...args);
+		this.app.use(...args);
+		return this;
 	}
 
 	/**************************************************************************
@@ -261,11 +319,12 @@ export default class Nexus {
 	 */
 	_bind() {
 		this.app.get("/describe/:name?", ::this._describeControllers);
-
-		// Configure error-handling middleware
-		this.app.use(this._handleError);
 	}
 
+	/**
+	 * [_configureCleanup description]
+	 * @return {[type]} [description]
+	 */
 	_configureCleanup() {
 
 		// Catches ctrl+c event
@@ -282,9 +341,9 @@ export default class Nexus {
 	 * @param  {[type]} options [description]
 	 * @return {[type]}         [description]
 	 */
-	_configureLogging(options) {
+	_configureLogging() {
 
-		if ((_.has(options, "logging") ? options.logging : this.config.get("logging"))) {
+		if (this.config.get("logging")) {
 
 			// Configure app-level logging
 			this.logger = Logger.getLogger("nexus");
@@ -304,8 +363,8 @@ export default class Nexus {
 	 * @param  {[type]} options [description]
 	 * @return {[type]}         [description]
 	 */
-	_configurePaths(options) {
-		if (!this.config.has("root") || this.config.get("root") == "") {
+	_configurePaths() {
+		if (this.config.get("root") == "") {
 			config.root = this.root = path.dirname(__dirname);
 		} else {
 			config.root = this.root = this.config.get("root");
@@ -317,9 +376,9 @@ export default class Nexus {
 	 * @param  {[type]} options [description]
 	 * @return {[type]}         [description]
 	 */
-	_configureStatic(options) {
-		if (_.has(options, "static") ? options.static : this.config.get("static")) {
-			this.staticRoot = resolvePath(options.staticRoot || this.config.get("staticRoot"));
+	_configureStatic() {
+		if (this.config.get("static")) {
+			this.staticRoot = resolvePath(this.config.get("staticRoot"));
 			this.app.use(express.static(this.staticRoot));
 		}
 	}
@@ -354,6 +413,10 @@ export default class Nexus {
 		}
 	}
 
+	/**
+	 * [_createWebsocketServer description]
+	 * @return {[type]} [description]
+	 */
 	_createWebsocketServer() {
 
 	}
@@ -382,30 +445,10 @@ export default class Nexus {
 			});
 		} else {
 			if (!_.has(this._controllers, controller)) {
-				throw new NexusException(CODES.NOT_FOUND, "controller", controller);
+				sendHttpError(new NexusException(CODES.NOT_FOUND, "controller", controller), res);
+			} else {
+				res.send(this._controllers[controller].meta());
 			}
-			res.send(this._controllers[controller].meta());
-		}
-	}
-
-	/**
-	 * [_destroyApp description]
-	 * @return {[type]} [description]
-	 */
-	_destroyApp() {
-		this.app = null;
-		this.server = null;
-	}
-
-	/**
-	 * [_destroyControllers description]
-	 * @return {[type]} [description]
-	 */
-	_destroyControllers() {
-		// TODO bind controller to events! rather than explicitly call destroy, i.e.
-		for (let name in this._controllers) {
-			this._controllers[name].destroy();
-			delete this._controllers[name];
 		}
 	}
 
@@ -415,7 +458,6 @@ export default class Nexus {
 	 */
 	_destroyLogger() {
 		Logger.destroy();
-		this.logger = null;
 	}
 
 	/**
@@ -427,7 +469,7 @@ export default class Nexus {
 	 * @return {[type]}        [description]
 	 */
 	_handleError(err, req, res, next) {
-		sendError(err, res);
+		sendHttpError(err, res);
 	}
 
 	/**
@@ -436,6 +478,10 @@ export default class Nexus {
 	 * @return {[type]}         [description]
 	 */
 	_middleware(options) {
+
+		if (config.proxy) {
+			app.enable("trust proxy");
+		}
 
 		this.app.use(morgan("combined", {
 			"stream": this.logger.stream
@@ -449,6 +495,9 @@ export default class Nexus {
 		}));
 
 		this.app.use(cookieParser());
+
+		// Configure error-handling middleware
+		this.app.use(this._handleError);
 	}
 
 	/**
@@ -457,7 +506,9 @@ export default class Nexus {
 	 */
 	_sigIntHandler() {
 		this.logger && this.logger.info("Captured ctrl-c");
-		this.destroy();
+		if (this.state != STATES.DESTROYING && this.state != STATES.DESTROYED) {
+			this.destroy();
+		}
 		process.exit(1);
 	}
 
@@ -476,10 +527,6 @@ export default class Nexus {
 	 * @return {[type]}   [description]
 	 */
 	_uncaughtExceptionHandler(e) {
-		this.logger && this.logger.error(e);
-		this.destroy();
-		process.exit(-1);
+		this.logger && this.logger.error("Unhandled Exception. " + e);
 	}
 }
-
-util.inherits(Nexus, events.EventEmitter);

@@ -8,6 +8,7 @@ import sinon from "sinon";
 import sinonChai from "sinon-chai";
 import request from "request";
 import Nexus from "~/main";
+import Services from "~/services/services";
 
 chai.use(sinonChai);
 chai.config.includeStack = true;
@@ -52,6 +53,8 @@ describe("Core server functionality", function() {
     after(function(done) {
         if (this.nexus) {
             this.nexus.destroy(done);
+        } else {
+            done();
         }
     });
 
@@ -68,6 +71,7 @@ describe("Core server functionality", function() {
         describe("Correct tests", function() {
 
             it("tests listing all available attached controllers", function(done) {
+                this.nexus.attach("services", Services);
                 request.get(this.nexus.address + "/describe", (error, response, body) => {
                     expect(response.statusCode).to.equal(200);
                     let msg = JSON.parse(body);

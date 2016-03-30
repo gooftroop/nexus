@@ -3,7 +3,7 @@
 import { DEFAULT_MESSAGE, DEFAULT_ERROR_CODE, DEFAULT_HTTP_ERROR_STATUS } from "./codes";
 import _ from "lodash";
 
-export default class HttpException extends Error {
+export class HttpException extends Error {
 
     /**
      * [constructor description]
@@ -12,9 +12,18 @@ export default class HttpException extends Error {
      * @return {[type]}         [description]
      */
     constructor(message=DEFAULT_MESSAGE, status=DEFAULT_HTTP_ERROR_STATUS) {
+
         super(message);
+        if (_.isObject(message)) {
+            this.code = message.code || DEFAULT_ERROR_CODE;
+            status = message.status || DEFAULT_HTTP_ERROR_STATUS;
+            message = message.message || DEFAULT_MESSAGE;
+
+        }
+
         this.message = message;
         this.status = status;
+        this.name = this.constructor.name;
         Error.captureStackTrace(this, this.constructor.name);
     }
 
@@ -33,7 +42,7 @@ export default class HttpException extends Error {
 /**
  * Base Exception/Error class for the Nexus app
  */
-class NexusException extends HttpException {
+export default class NexusException extends HttpException {
 
     /**
      * [code description]
@@ -56,6 +65,7 @@ class NexusException extends HttpException {
 
         super(message, status);
         this.code = code;
+        this.name = this.constructor.name;
         Error.captureStackTrace(this, this.constructor.name);
     }
 
@@ -67,12 +77,10 @@ class NexusException extends HttpException {
     }
 }
 
-export { NexusException };
-
 /**
  *
  */
-class IllegalArgumentException extends NexusException {
+export class IllegalArgumentException extends NexusException {
 
     /**
      * [constructor description]
@@ -86,12 +94,10 @@ class IllegalArgumentException extends NexusException {
     }
 }
 
-export { IllegalArgumentException };
-
 /**
  *
  */
-class IllegalStateException extends NexusException {
+export class IllegalStateException extends NexusException {
 
     /**
      * [constructor description]
@@ -105,12 +111,10 @@ class IllegalStateException extends NexusException {
     }
 }
 
-export { IllegalStateException };
-
 /**
  *
  */
-class ImproperlyConfiguredException extends NexusException {
+export class ImproperlyConfiguredException extends NexusException {
 
     /**
      * [constructor description]
@@ -124,12 +128,10 @@ class ImproperlyConfiguredException extends NexusException {
     }
 }
 
-export { ImproperlyConfiguredException };
-
 /**
  *
  */
-class RegistryException extends NexusException {
+export class NotYetImplementedException extends NexusException {
 
     /**
      * [constructor description]
@@ -143,12 +145,10 @@ class RegistryException extends NexusException {
     }
 }
 
-export { RegistryException };
-
 /**
  *
  */
-class ServiceException extends NexusException {
+export class RegistryException extends NexusException {
 
     /**
      * [constructor description]
@@ -162,4 +162,19 @@ class ServiceException extends NexusException {
     }
 }
 
-export { ServiceException };
+/**
+ *
+ */
+export class ServiceException extends NexusException {
+
+    /**
+     * [constructor description]
+     * @param  {...[type]} args [description]
+     * @return {[type]}         [description]
+     */
+    constructor(...args) {
+        super(...args);
+        this.name = this.constructor.name;
+        Error.captureStackTrace(this, this.constructor.name);
+    }
+}

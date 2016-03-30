@@ -64,8 +64,6 @@ export default class Logger extends winston.Logger {
 	static destroy() {
 		if (instance != null) {
 			instance.close();
-			instance.handlers = null;
-			instance.loggers = null;
 			instance = null;
 		}
 	}

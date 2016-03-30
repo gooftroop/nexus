@@ -28,77 +28,26 @@ const TEST_PORT = 8081;
 
 describe("Services", function() {
 
-    beforeEach(function(done) {
-        this.nexus = new Nexus();
-        this.nexus.run(() => {
-            this.BASE_SERVICES_URL = this.nexus.address + "/services";
-            this.SERVICES_REGISTER_URL = this.BASE_SERVICES_URL + "/register/";
-            this.SERVICES_UNREGISTER_URL = this.BASE_SERVICES_URL + "/unregister/";
-            done();
-        });
-    });
 
-    afterEach(function(done) {
-        if (this.nexus) {
-            this.nexus.destroy(done);
-        }
-    });
+    // before(function(done) {
+    //     this.nexus = new Nexus();
+    //     this.nexus.run(done);
+    // });
 
-    describe("Local Services", function() {
-        describe("Zero-conf", function() {});
-        describe("Explicitly bound", function() {});
-    });
+    // after(function(done) {
+    //     if (this.nexus) {
+    //         this.nexus.destroy(done);
+    //     } else {
+    //        done();
+    //    }
+    // });
 
-    describe("Remote Services", function() {
-
-        describe("Service's REST API", function(done) {
-
-            // TODO push nexus onto polo and change test
-            it("tests that '/services' returns an empty result when no services have been registered", function(done) {
-                request.get({
-                    method: "GET",
-                    json: true,
-                    uri: this.BASE_SERVICES_URL
-                }, function(error, response, body) {
-                    expect(response.statusCode).to.equal(200);
-                    // expect(body).to.deep.equal([{
-                    //     "name": "nexus",
-                    //     "paths": {},
-                    //     "url": "192.168.246.152:8080"
-                    // }]);
-                    expect(body).to.deep.equal([]);
-                    done();
-                });
-            });
-
-            // Omitting an API
-            it("tests registering a service without publishing an API", function(done) {
-                let service = new RemoteRestService(TEST_PORT);
-                request({
-                    method: "POST",
-                    json: true,
-                    uri: this.SERVICES_REGISTER_URL + service.name
-                }, function(error, response, body) {
-                    expect(response.statusCode).to.equal(200);
-                    done();
-                });
-            });
-
-            it("tests getting information about that service through the proxy", function() {});
-            it("tests calling GET on that service through the proxy", function() {});
-            it("tests calling POST on that service through the proxy", function() {});
-            it("tests calling PUT on that service through the proxy", function() {});
-            it("tests calling DELETE on that service through the proxy", function() {});
-            it("tests unregistering a service", function() {});
-
-            // Publishing an API
-            it("tests registering a service and publishing an API", function() {});
-            it("tests getting information about that service throug hthe proxy", function() {});
-            it("tests calling GET on that service through the proxy", function() {});
-            it("tests calling POST on that service through the proxy", function() {});
-            it("tests calling PUT on that service through the proxy", function() {});
-            it("tests calling DELETE on that service through the proxy", function() {});
-            it("tests unregistering a service", function() {});
-        });
-    });
+    it("tests that a Service controller is attached to a runnin Nexus instance", function() {});
+    it("tests that an API with a name can be defined on the Service Controller", function() {});
+    it("tests that the same API with a name can be removed from the Service Controller", function() {});
+    it("tests that an API without a name can be defined on the Service Controller", function() {});
+    it("tests that the same API without a name can be removed from the Service Controller", function() {});
+    it("tests registering multiple APIs under the same name", function() {});
+    it("tests removing a single API from an API swarm", function() {});
+    it("tests removing all APIs from an API swarm by using the API name", function() {});
 });

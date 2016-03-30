@@ -23,11 +23,11 @@ const VARIABLE_REGEX = new RegExp(
     ")", "gmi");
 
 /**
- * [ensureForwardSlash description]
+ * [ensureLeadingSlash description]
  * @param  {[type]} string [description]
  * @return {[type]}        [description]
  */
-export function ensureForwardSlash(string) {
+export function ensureLeadingSlash(string) {
     return _.startswith(string, "/") ? string : ("/" + string);
 }
 
@@ -91,12 +91,12 @@ export function resolvePath(_path, root) {
 }
 
 /**
- * [sendError description]
+ * [sendHttpError description]
  * @param  {[type]} err [description]
  * @param  {[type]} res [description]
  * @return {[type]}     [description]
  */
-export function sendError(err, res) {
+export function sendHttpError(err, res) {
     // TODO Why do we have to ref 'default' here, but not in other files???
     let logger = Logger.default.getLogger("nexus"),
         status = DEFAULT_HTTP_ERROR_STATUS,
@@ -111,8 +111,10 @@ export function sendError(err, res) {
         report = " -- (CODE: " + err.code + "; STATUS: " + status + ") " + report;
     }
 
+    // TODO short-circuit this statement if in PRODUCTION mode. Don't leak stacks in production
+    // but...allow that to be configurable
     if (_.has(err, "stack")) {
-        report += ("." + err.stack);
+        report += (". STACK:\n" + err.stack);
     }
 
     logger.error("Error" + report);

@@ -6,17 +6,22 @@
  * https://nodejs.org/api/tls.html#tls_tls_createserver_options_secureconnectionlistener
  */
 {
-	"backlog": 511,
-	"debug": true,
-	"discovery": true,
-	"hostname": "localhost",
-	"logging": true,
-	"port": 8080,
-	"root": "",
-	"static": true,
-	"staticRoot": "{root}/public",
-	"protocol": "http",
-	"ssl": {},
+	"nexus": {
+		"backlog": 511,
+		"debug": true,
+		"discovery": true,
+		"hostname": "localhost",
+		"logging": true,
+		"port": 8080,
+		"proxy": false,
+		"root": "",
+		"static": true,
+		"staticRoot": "{root}/public",
+		"protocol": "http",
+		"ssl": {},
+	},
+	"services": {},
+	"registry": {},
 	"logging": {
 		"root": "{root}/logs",
 		"level": "debug",
@@ -38,15 +43,19 @@
 			}
 		},
 		"loggers": {
+			"api": {
+				"level": "verbose",
+				"transports": "defaultFileHandler"
+			},
 			"nexus": {
 				"level": "verbose",
 				"transports": "defaultFileHandler"
 			},
-			"services": {
+			"registry": {
 				"level": "verbose",
 				"transports": "defaultFileHandler"
 			},
-			"registry": {
+			"services": {
 				"level": "verbose",
 				"transports": "defaultFileHandler"
 			}

@@ -8,30 +8,31 @@ const DEFAULT_MESSAGE = "An error occurred while processing your request";
 const DEFAULT_ERROR_CODE = 0;
 const DEFAULT_HTTP_ERROR_STATUS = 500;
 const CODES = {
+	// GENERAL EXCEPTIONS
 	DEFAULT: {
 		code: 0,
 		status: 500,
 		message: function(arg) {
-			return "This is a very unhelpful error message...apparently something bad happened. Please contact your "
-					+ "Systems Administrator for more information"
-					+ ((arg != null) ? (". (" + arg + ")") : ".");
+			return "This is a very unhelpful error message...apparently something bad happened. Please contact your " +
+				   "Systems Administrator for more information" +
+				   ((arg != null) ? (". (" + arg + ")") : ".");
 		}
 	},
 	ILLEGAL_ARGUMENT: {
 		code: 1,
 		status: 400,
 		message: function(arg1, arg2) {
-			return "Illegal argument '"
-					+ arg1
-					+ "'"
-					+ ((arg2 != null) ? (". " + arg2) : ".");
+			return "Illegal argument '" +
+			arg1 +
+			"'" +
+			((arg2 != null) ? (". " + arg2) : ".");
 		}
 	},
 	REQUIRED_PARAMETER: {
 		code: 2,
 		status: 400,
 		message: function(arg) {
-			return arg + " is required.";
+			return arg + " is required";
 		}
 	},
 	INVALID_TYPE: {
@@ -46,11 +47,11 @@ const CODES = {
 		status: 500,
 		message: function(variable, expected, actual) {
 			return "'" + variable + "'" +
-				   (
-						expected != null ?
-						": Expected '" + expected + "'; found '" + actual + "' instead" :
-						" contains unexpected value: " + actual
-					);
+				(
+					expected != null ?
+					": Expected '" + expected + "'; found '" + actual + "' instead" :
+					" contains unexpected value" + (actual != null ? + ": '" + actual + "'" : "")
+				);
 		}
 	},
 	NOT_FOUND: {
@@ -68,24 +69,40 @@ const CODES = {
 		}
 	},
 	UNEXPECTED_STATE: {
-		code: 6,
+		code: 7,
 		status: 500,
-		message: function(expected, actual) {
-			return "Invalid state. Expected to not be in state " + expected;
+		message: function(state) {
+			return "Invalid state. Expected to not be in state " + state;
 		}
 	},
+	CANNOT_ATTACH_CONTROLLER: {
+		code: 8,
+		status: 500,
+		message: function(state) {
+			return "Nexus is " + state + ". Cannot attach controller";
+		}
+	},
+	NOT_YET_IMPLEMENTED: {
+		code: 9,
+		status: 500,
+		message: function(name) {
+			return "Extend error: '" + name + "'' is not implemented";
+		}
+	},
+	// CONTROLLER EXCEPTIONS
 	DUPLICATE_CONTROLLER: {
 		code: 50,
 		status: 400,
 		message: function(name) {
-			return "Controller '" + name + "' is already attached"
+			return "Controller '" + name + "' is already attached";
 		}
 	},
+	// SERVICE EXCEPTIONS
 	SERVICE_NOT_FOUND: {
 		code: 100,
 		status: 404,
 		message: function(arg) {
-			return "Service '" + arg + "' was not found.";
+			return "Service '" + arg + "' was not found";
 		}
 	},
 	ILLEGAL_SERVICE_NAME: {
@@ -95,22 +112,90 @@ const CODES = {
 			return arg1 + " must be a valid service name" + (arg2 != null ? " (" + arg2 + ")" : "");
 		}
 	},
-	METHOD_NOT_SUPPORTED: {
+	SERVICE_ALREADY_DEFINED: {
 		code: 102,
-		status: 404,
-		message: function(method, url, name) {
-			return "Method '"
-					+ method
-					+ "' for url '"
-					+ url
-					+ "' is not supported by the service '"
-					+ name
-					+ "'.";
+		status: 500,
+		message: function(name) {
+			return "Service '" + name + "'' is already defined";
+		}
+	},
+	ILLEGAL_ACTION: {
+		code: 103,
+		status: 400,
+		message: function(action) {
+			return "Invalid action. Cannot register service for action '" +
+				typeof(action) +
+				"'. Action must either be a String, Array, or Object";
+		}
+	},
+	IMPROPERLY_CONFGIURED_HTTP_ACTION: {
+		code: 104,
+		status: 400,
+		message: function() {
+			return "Provided action is configured incorrectly. If providing an action as an object or array of " +
+				   "objects, the object must be in the form of '{ action: ..., method: ...}'";
+		}
+	},
+	INVALID_URI: {
+		code: 105,
+		status: 400,
+		message: function(uri) {
+			return "Invalid remote service uri: " + uri;
+		}
+	},
+	ACTION_NOT_SUPPORTED: {
+		code: 106,
+		status: 400,
+		message: function(action, name) {
+			return "Action '" + action + "' is not supported for service '" + name + "'";
+		}
+	},
+	HTTP_METHOD_NOT_SUPPORTED: {
+		code: 107,
+		status: 400,
+		message: function(method, name) {
+			return "HTTP Method '" + method + "' is not supported for service '" + name + "'";
+		}
+	},
+	MISSING_REQUEST_PARAMETER: {
+		code: 108,
+		status: 400,
+		message: function(param) {
+			return "Invalid request: Missing request parameter '" + param + "'";
+		}
+	},
+	MISSING_BODY_PARAMETER: {
+		code: 109,
+		status: 400,
+		message: function(param) {
+			return "Invalid request: Missing body parameter '" + param + "'";
+		}
+	},
+	// REGISTRY EXCEPTIONS
+	MISSING_REGISTRY: {
+		code: 200,
+		status: 500,
+		message: function() {
+			return "No Registry has been configured!";
+		}
+	},
+	// INTENT EXCEPTIONS
+	INVALID_INTENT: {
+		code: 300,
+		status: 400,
+		message: function() {
+			return "Invalid intent '" + intent + "'";
 		}
 	}
 };
 
-export { DEFAULT_MESSAGE };
-export { DEFAULT_ERROR_CODE };
-export { DEFAULT_HTTP_ERROR_STATUS };
+export {
+	DEFAULT_MESSAGE
+};
+export {
+	DEFAULT_ERROR_CODE
+};
+export {
+	DEFAULT_HTTP_ERROR_STATUS
+};
 export default CODES;
