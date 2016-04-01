@@ -171,12 +171,33 @@ const CODES = {
 			return "Invalid request: Missing body parameter '" + param + "'";
 		}
 	},
-	// REGISTRY EXCEPTIONS
-	MISSING_REGISTRY: {
-		code: 200,
+	INVALID_ADAPTER: {
+		code: 110,
+		status: 500,
+		message: function(name) {
+			return "Invalid adapter for registration: no adapter name was found";
+		}
+	},
+	ADAPTER_NOT_DEFINED: {
+		code: 111,
 		status: 500,
 		message: function() {
-			return "No Registry has been configured!";
+			return "An adapter has not been defined for the model. Did you foget to call 'adapter()'?";
+		}
+	},
+	MISSING_REGISTRY: {
+		code: 112,
+		status: 500,
+		message: function() {
+			return "No Registry has been configured. Did you forget to call 'setRegistry()'?";
+		}
+	},
+	// REGISTRY EXCEPTIONS
+	MISSING_ADAPTER: {
+		code: 200,
+		status: 500,
+		message: function(name) {
+			return "Adapter '" + name + "' has not been registered";
 		}
 	},
 	// INTENT EXCEPTIONS

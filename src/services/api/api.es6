@@ -45,15 +45,12 @@ export default class APIService extends Doodad {
     // Service Datastore field
     registry = null;
 
-    // Adapter Reference
-    adapter = null;
-
     /**
      * [constructor description]
      * @param  {[type]} app [description]
      * @return {[type]}     [description]
      */
-    constructor(name, adapter, registry) {
+    constructor(name) {
 
         super();
 
@@ -65,18 +62,8 @@ export default class APIService extends Doodad {
             throw new IllegalArgumentException(CODES.INVALID_TYPE, "name", "String");
         }
 
-        if (adapter == null) {
-            throw new IllegalArgumentException(CODES.REQUIRED_PARAMETER, "adapter");
-        }
-
-        this.adapter = adapter;
-
         this.name = name;
         this.logger = Logger.getLogger("api");
-
-        if (registry != null) {
-            this.setRegistry(registry);
-        }
     }
 
     /**
@@ -88,11 +75,13 @@ export default class APIService extends Doodad {
         // TODO need to do some validation here!
         // TODO Check if method exists - return error if not
         // TODO the adapter needs to be part of the model
-        let data = this.registry.get(intent.get("service")),
-            adapter = new(this.adapter)(data);
+        let model = this.registry.get(intent.get("service")),
+            adapter = this.registry.getAdapter(model.adapter);
+
         return new Promise((resolve, reject) => {
             adapter[intent.action](
                 intent,
+                model,
                 this._resolveForIntent(resolve),
                 this._rejectForIntent(reject)
             );
@@ -113,27 +102,45 @@ export default class APIService extends Doodad {
         }
 
         this.registry = registry;
+
     }
 
     /**************************************************************************
      * BUILDER METHODS
      *************************************************************************/
 
+     /**
+      * [adapter description]
+      * @param  {[type]} adapterName [description]
+      * @param  {[type]} Adapter     [description]
+      * @return {[type]}             [description]
+      */
+     adapter(adapterName, Adapter) {
+        if (this.registry == null) {
+            throw new ServiceException(CODES.MISSING_REGISTRY);
+        }
+
+        this.registry.registerAdapter(adapterName, Adapter);
+        console.log(this.model);
+        this.model.adapter = adapterName;
+        return this;
+     }
+
     /**
      * [for description]
      * @param  {[type]} actions [description]
      * @return {[type]}         [description]
      */
-    for (actions) {
+    for(actions) {
         throw new NotYetImplementedException(CODES.NOT_YET_IMPLEMENTED, "for");
     }
 
     /**
      * [on description]
-     * @param  {[type]} channel [description]
-     * @return {[type]}         [description]
+     * @param  {[type]} uri [description]
+     * @return {[type]}     [description]
      */
-    on(channel) {
+    on(uri) {
         throw new NotYetImplementedException(CODES.NOT_YET_IMPLEMENTED, "on");
     }
 
@@ -142,7 +149,7 @@ export default class APIService extends Doodad {
      * @param  {[type]} value [description]
      * @return {[type]}         [description]
      */
-    with(value) {
+    with(key, value) {
         throw new NotYetImplementedException(CODES.NOT_YET_IMPLEMENTED, "with");
     }
 
@@ -156,7 +163,7 @@ export default class APIService extends Doodad {
      * @param  {[type]} attrs  [description]
      * @return {[type]}      [description]
      */
-    register(name) {
+    create(name) {
         /*
          * Return a Anyonomous Object as 'Registration Proxy'
          * This proxy will allow APIs to dynamically register new services
@@ -170,7 +177,6 @@ export default class APIService extends Doodad {
         }
 
         let model = new ServiceModel(name);
-
         return _.extend(this, {
             model: model
         });
@@ -181,6 +187,15 @@ export default class APIService extends Doodad {
      * @return {[type]} [description]
      */
     save() {
+
+        if (this.registry == null) {
+            throw new ServiceException(CODES.MISSING_REGISTRY);
+        }
+
+        if (this.model.adapter == null) {
+            throw new ServiceException(CODES.ADAPTER_NOT_DEFINED);
+        }
+
         this.registry.set(this.model.name, this.model);
         return this;
     }
@@ -208,7 +223,7 @@ export default class APIService extends Doodad {
      * @param  {[type]} name [description]
      * @return {[type]}      [description]
      */
-    unregister(name) {
+    remove(name) {
 
         if (this.registry == null) {
             throw new ServiceException(CODES.MISSING_REGISTRY);

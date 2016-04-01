@@ -46,7 +46,7 @@ export default class ServiceRegistry extends IRegistry {
         }
 
         if (!this.contains(name)) {
-            throw new IllegalArgumentException(CODES.ILLEGAL_SERVICE_NAME, "name");
+            throw new RegistryException(CODES.ILLEGAL_SERVICE_NAME, "name");
         }
 
         return this.storage[name];
@@ -63,7 +63,7 @@ export default class ServiceRegistry extends IRegistry {
         }
 
         if (!_.isString(name)) {
-            throw new IllegalArgumentException(CODES.INVALID_TYPE, "name", "string");
+            throw new IllegalArgumentException(CODES.INVALID_TYPE, "name", "String");
         }
 
         // allow null value set
@@ -85,8 +85,12 @@ export default class ServiceRegistry extends IRegistry {
      * @return {[type]}      [description]
      */
     remove(name) {
-        if (name == null) { // TODO check if string
+        if (name == null) {
             throw new IllegalArgumentException(CODES.REQUIRED_PARAMETER, "name");
+        }
+
+        if (!_.isString(name)) {
+            throw new IllegalArgumentException(CODES.INVALID_TYPE, "name", "String");
         }
 
         if (!_.has(this.storage, name)) {

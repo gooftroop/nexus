@@ -1,10 +1,13 @@
 "use strict";
 
+import _ from "lodash";
 import config from "config";
 import Logger from "~/logger";
 import Doodad from "~/lib/doodad";
 import {
-	NotYetImplementedException
+	NotYetImplementedException,
+	IllegalArgumentException,
+	RegistryException
 }
 from "~/error/exceptions";
 
@@ -22,6 +25,9 @@ export default class IServiceRegistry extends Doodad {
 	// Config object
 	config = config.get("registry");
 
+	// Default Adapter Registry
+	_adapterRegistry = {};
+
 	/**
 	 * [constructor description]
 	 * @return {[type]} [description]
@@ -29,6 +35,10 @@ export default class IServiceRegistry extends Doodad {
 	constructor() {
 		super();
 	}
+
+	/**************************************************************************
+	 * SERVICE REGISTRATION
+	 *************************************************************************/
 
 	/**
 	 * [contains description]
@@ -72,5 +82,55 @@ export default class IServiceRegistry extends Doodad {
 	 */
 	remove(name) {
 		throw new NotYetImplementedException("contains");
+	}
+
+	/**************************************************************************
+	 * ADAPTER REGISTRATION
+	 *************************************************************************/
+
+	 /**
+	  * [getAdapter description]
+	  * @param  {[type]} adapterName [description]
+	  * @return {[type]}           [description]
+	  */
+	getAdapter(adapterName) {
+		if (adapterName == null) {
+			throw new IllegalArgumentException(CODES.REQUIRED_PARAMETER, "adapterName");
+		}
+
+		if (!_.isString(adapterName)) {
+			throw new IllegalArgumentException(CODES.INVALID_TYPE, "adapterName", "String");
+		}
+
+		if (!_.has(this._adapterRegistry, adapterName)) {
+			throw new RegistryException(CODES.MISSING_ADAPTER);
+		}
+		return this._adapterRegistry[adapterName];
+	}
+
+	/**
+	 * [registerAdapter description]
+	 * @param  {[type]} adapterName [description]
+	 * @param  {[type]} Adapter     [description]
+	 * @return {[type]}             [description]
+	 */
+	registerAdapter(adapterName, Adapter) {
+		if (adapterName == null) {
+			throw new IllegalArgumentException(CODES.REQUIRED_PARAMETER, "adapterName");
+		}
+
+		if (!_.isString(adapterName)) {
+			throw new IllegalArgumentException(CODES.INVALID_TYPE, "adapterName", "String");
+		}
+
+		if (Adapter == null) {
+			throw new IllegalArgumentException(CODES.REQUIRED_PARAMETER, "Adapter");
+		}
+
+		if (!_.has(this._adapterRegistry, adapterName)) {
+			let adapter = new Adapter();
+			this._adapterRegistry[adapterName] = adapter;
+			this.once("destroy", adapter.destroy);
+		}
 	}
 }

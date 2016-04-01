@@ -18,6 +18,9 @@ export default class ServiceModel {
     // Model name
     _name = null;
 
+    // Adapter name
+    _adapter = null;
+
     /**
      * [constructor description]
      * @param  {[type]} name [description]
@@ -25,6 +28,31 @@ export default class ServiceModel {
      */
     constructor(name) {
         this.name = name;
+    }
+
+    /**
+     * [adapter description]
+     * @return {[type]} [description]
+     */
+    get adapter() {
+        return this._adapter;
+    }
+
+    /**
+     * [adpater description]
+     * @param  {[type]} adapter [description]
+     * @return {[type]}         [description]
+     */
+    set adapter(adapter) {
+        if (adapter == null) {
+            throw new IllegalArgumentException(CODES.REQUIRED_PARAMETER, "adapter");
+        }
+
+        if (!_.isString(adapter)) {
+            throw new IllegalArgumentException(CODES.INVALID_TYPE, "adapter", "String");
+        }
+
+        this._adapter = adapter;
     }
 
     /**

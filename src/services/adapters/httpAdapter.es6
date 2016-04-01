@@ -20,15 +20,23 @@ export const DEFAULT_METHOD = "all";
 /**
  *
  */
-export default class HttpService extends IAdapter {
+export default class HttpAdapter extends IAdapter {
 
     /**
      * [constructor description]
      * @param  {[type]} arg [description]
      * @return {[type]}      [description]
      */
-    constructor(data={}) {
-        super(data);
+    constructor() {
+        super();
+    }
+
+    /**
+     * [name description]
+     * @return {[type]} [description]
+     */
+    static name() {
+        return "HttpAdapter";
     }
 
     /**
@@ -47,13 +55,13 @@ export default class HttpService extends IAdapter {
      * @param  {[type]} reject  [description]
      * @return {[type]}         [description]
      */
-    request(intent, resolve, reject) {
+    request(intent, model, resolve, reject) {
         // TODO capture any errors and use reject
         // TODO ensure that path, method exists!
         let uri,
             path,
             _whitelistedMethod,
-            actions = this.data.get("actions"),
+            actions = model.get("actions"),
             action = intent.get("action"),
             method = intent.get("method");
 
@@ -61,17 +69,17 @@ export default class HttpService extends IAdapter {
 
         if (!_.isEmpty(actions)) {
             if (!_.has(actions, action)) {
-                return reject(new ServiceException(CODES.ACTION_NOT_SUPPORTED, action, this.data.get("name")));
+                return reject(new ServiceException(CODES.ACTION_NOT_SUPPORTED, action, model.get("name")));
             }
 
             _whitelistedMethod = actions[action];
             if (_whitelistedMethod != null && _whitelistedMethod != method && _whitelistedMethod != DEFAULT_METHOD) {
-                return reject(new ServiceException(CODES.HTTP_METHOD_NOT_SUPPORTED, method, this.data.get("name")));
+                return reject(new ServiceException(CODES.HTTP_METHOD_NOT_SUPPORTED, method, model.get("name")));
             }
         }
 
         path = _.has(actions, "path") ? actions.path : action;
-        uri = url.resolve(this.data.get("uri"), path);
+        uri = url.resolve(model.get("uri"), path);
         request({
             url: uri,
             method: method

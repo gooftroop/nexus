@@ -10,17 +10,21 @@ import { IllegalArgumentException, IllegalStateException } from "~/error/excepti
  */
 export default class IAdapter extends Doodad {
 
-	// Service data instance
-	data = null;
-
 	/**
 	 * [constructor description]
 	 * @param  {[type]} name [description]
 	 * @return {[type]}      [description]
 	 */
-	constructor(data={}) {
+	constructor() {
 		super();
-		this.data = data;
+	}
+
+	/**
+	 * [name description]
+	 * @return {[type]} [description]
+	 */
+	static name() {
+		throw new NotYetImplementedException(CODES.NOT_YET_IMPLEMENTED, "name");
 	}
 
 	/**************************************************************************
@@ -31,7 +35,7 @@ export default class IAdapter extends Doodad {
 	 * [publish description]
 	 * @return {[type]} [description]
 	 */
-	publish(intent, resolve, reject) {
+	publish(intent, model, resolve, reject) {
 		throw new NotYetImplementedException(CODES.NOT_YET_IMPLEMENTED, "publish");
 	}
 
@@ -39,7 +43,7 @@ export default class IAdapter extends Doodad {
 	 * [subscribe description]
 	 * @return {[type]} [description]
 	 */
-	subscribe(intent, resolve, reject) {
+	subscribe(intent, model, resolve, reject) {
 		throw new NotYetImplementedException(CODES.NOT_YET_IMPLEMENTED, "subscribe");
 	}
 
@@ -47,7 +51,7 @@ export default class IAdapter extends Doodad {
 	 * [request description]
 	 * @return {[type]} [description]
 	 */
-	request(intent, resolve, reject) {
+	request(intent, model, resolve, reject) {
 		throw new NotYetImplementedException(CODES.NOT_YET_IMPLEMENTED, "request");
 	}
 
@@ -55,7 +59,7 @@ export default class IAdapter extends Doodad {
 	 * [respond description]
 	 * @return {[type]} [description]
 	 */
-	respond(intent, resolve, reject) {
+	respond(intent, model, resolve, reject) {
 		throw new NotYetImplementedException(CODES.NOT_YET_IMPLEMENTED, "respond");
 	}
 
@@ -63,7 +67,7 @@ export default class IAdapter extends Doodad {
 	 * [push description]
 	 * @return {[type]} [description]
 	 */
-	push(intent, resolve, reject) {
+	push(intent, model, resolve, reject) {
 		throw new NotYetImplementedException(CODES.NOT_YET_IMPLEMENTED, "push");
 	}
 
@@ -71,7 +75,7 @@ export default class IAdapter extends Doodad {
 	 * [pull description]
 	 * @return {[type]} [description]
 	 */
-	pull(intent, resolve, reject) {
+	pull(intent, mdoel, resolve, reject) {
 		throw new NotYetImplementedException(CODES.NOT_YET_IMPLEMENTED, "pull");
 	}
 }

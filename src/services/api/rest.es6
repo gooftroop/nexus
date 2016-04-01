@@ -13,10 +13,8 @@ import {
     ServiceException
 }
 from "~/error/exceptions";
-import HttpAdapter, {
-    DEFAULT_METHOD
-}
-from "~/services/adapters/httpAdapter";
+import HttpAdapter from "~/services/adapters/httpAdapter";
+import { DEFAULT_METHOD } from "~/services/adapters/httpAdapter";
 import {
     sendHttpError
 }
@@ -37,8 +35,8 @@ export default class RESTService extends APIService {
      * @param  {[type]} app [description]
      * @return {[type]}     [description]
      */
-    constructor(app, registry) {
-        super("REST", HttpAdapter, registry);
+    constructor(app) {
+        super("REST");
         this.bind(app);
     }
 
@@ -87,11 +85,11 @@ export default class RESTService extends APIService {
     }
 
     /**
-     * [with description]
+     * [on description]
      * @param  {[type]} uri [description]
-     * @return {[type]}         [description]
+     * @return {[type]}     [description]
      */
-    with(uri) {
+    on(uri) {
         if (!validator.isURL(uri, {
                 require_protocol: true
             }) && !validator.isIP(uri)) {
@@ -130,9 +128,10 @@ export default class RESTService extends APIService {
             uri = req.body.uri;
 
         try {
-            super.register(name)
+            this.create(name)
+                .adapter("HttpAdapter", HttpAdapter)
                 .for(actions)
-                .with(uri)
+                .on(uri)
                 .save();
         } catch (e) {
             return next(e);
@@ -168,7 +167,6 @@ export default class RESTService extends APIService {
      */
     services(req, res, next) {
         try {
-            // TODO validate name
             let service = super.services(req.params.name);
             // TODO aync event, return response
             res.send(service);
@@ -219,11 +217,14 @@ export default class RESTService extends APIService {
      */
     unregister(req, res, next) {
         // remove from register
+        if (!_.has(req.params, "name")) {
+            throw new ServiceException(CODES.MISSING_REQUEST_PARAMETER, "name");
+        }
+
         try {
-            // TODO validate name
             let name = req.params.name;
             // TODO aync event, return response
-            super.unregister(name);
+            this.remove(name);
             res.send({
                 message: "Service '" + name + "' unregistered"
             });
@@ -263,7 +264,7 @@ export default class RESTService extends APIService {
         } else if (_.isString(actions)) {
             // TODO instantiate on one line
             let ret = {};
-            ret[actions] = DEFAULT_METHOD;
+            ret[actions] = HttpAdapter.DEFAULT_METHOD;
             return ret;
         } else if (actions === undefined) {
             // If actions is undefined, then allow full path pass-through
