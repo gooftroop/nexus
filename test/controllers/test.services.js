@@ -7,7 +7,7 @@ from "chai";
 import sinon from "sinon";
 import sinonChai from "sinon-chai";
 import request from "request";
-import Nexus from "~/main";
+import Nexus from "~/nexus";
 
 import RemoteRestService from "~/../test/resources/services/remoteRestService";
 
@@ -42,7 +42,7 @@ describe("Services", function() {
     //    }
     // });
 
-    it("tests that a Service controller is attached to a runnin Nexus instance", function() {});
+    it("tests that a Service controller is attached to a running Nexus instance", function() {});
     it("tests that an API with a name can be defined on the Service Controller", function() {});
     it("tests that the same API with a name can be removed from the Service Controller", function() {});
     it("tests that an API without a name can be defined on the Service Controller", function() {});

@@ -1,5 +1,6 @@
 "use strict";
 
+// Third-party imports
 import chai, {
     expect
 }
@@ -7,11 +8,14 @@ from "chai";
 import sinon from "sinon";
 import sinonChai from "sinon-chai";
 import request from "request";
-import Nexus from "~/main";
+
+// Nexus Imports
+import Nexus from "~/nexus";
 import Services from "~/services/services";
 import RESTService from "~/services/api/rest";
 import LocalRegistry from "~/services/registry/localRegistry";
 
+// Test imports
 import RemoteRestService from "~/../test/resources/services/remoteRestService";
 
 chai.use(sinonChai);
@@ -85,7 +89,10 @@ describe("REST Service", function() {
                 json: true,
                 uri: this.SERVICES_REGISTER_URL + service.name,
                 body: {
-                    uri: service.uri()
+                    uri: service.uri(),
+                    options: {
+                        json: true
+                    }
                 }
             }, function(error, response, body) {
                 expect(response.statusCode).to.equal(200);
@@ -138,9 +145,44 @@ describe("REST Service", function() {
                 });
             });
 
-            it("tests sucessfully calling POST on that service through the proxy", function() {});
-            it("tests sucessfully calling PUT on that service through the proxy", function() {});
-            it("tests sucessfully calling DELETE on that service through the proxy", function() {});
+            it("tests sucessfully calling POST on that service through the proxy", function(done) {
+                request.post({
+                    json: true,
+                    uri: this.BASE_SERVICES_URL + "/" + service.name + "/test",
+                    body: {
+                        name: "foo"
+                    }
+                }, function(error, response, body) {
+                    expect(response.statusCode).to.equal(200);
+                    expect(body).to.equal("POST: foo");
+                    done();
+                });
+            });
+
+            it("tests sucessfully calling PUT on that service through the proxy", function(done) {
+                request.put({
+                    json: true,
+                    uri: this.BASE_SERVICES_URL + "/" + service.name + "/test",
+                    body: {
+                        name: "foo"
+                    }
+                }, function(error, response, body) {
+                    expect(response.statusCode).to.equal(200);
+                    expect(body).to.equal("PUT: foo");
+                    done();
+                });
+            });
+
+            it("tests sucessfully calling DELETE on that service through the proxy", function(done) {
+                request.del({
+                    json: true,
+                    uri: this.BASE_SERVICES_URL + "/" + service.name + "/test/foo"
+                }, function(error, response, body) {
+                    expect(response.statusCode).to.equal(200);
+                    expect(body).to.equal("DELETE: foo");
+                    done();
+                });
+            });
 
         });
 

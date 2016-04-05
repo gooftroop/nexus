@@ -25,6 +25,7 @@
 	"logging": {
 		"root": "{root}/logs",
 		"level": "debug",
+		"trace": true,
 		"transports": {
 			"console": {
 				"transport": "winston.transports.Console",

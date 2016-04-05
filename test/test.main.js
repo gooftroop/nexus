@@ -7,7 +7,7 @@ from "chai";
 import sinon from "sinon";
 import sinonChai from "sinon-chai";
 import request from "request";
-import Nexus from "~/main";
+import Nexus from "~/nexus";
 import Services from "~/services/services";
 
 chai.use(sinonChai);

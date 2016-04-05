@@ -131,6 +131,29 @@ export default class IServiceRegistry extends Doodad {
 			let adapter = new Adapter();
 			this._adapterRegistry[adapterName] = adapter;
 			this.once("destroy", adapter.destroy);
+			this.emit("registry", "adapter", "up", adapterName);
 		}
+	}
+
+	/**
+	 * [removeAdapter description]
+	 * @param  {[type]} adapterName [description]
+	 * @return {[type]}             [description]
+	 */
+	removeAdapter(adapterName) {
+		if (adapterName == null) {
+			throw new IllegalArgumentException(CODES.REQUIRED_PARAMETER, "adapterName");
+		}
+
+		if (!_.isString(adapterName)) {
+			throw new IllegalArgumentException(CODES.INVALID_TYPE, "adapterName", "String");
+		}
+
+		let adapter = this._adapterRegistry[adapterName];
+		delete this._adapterRegistry[adapterName];
+		this.removeListener("destroy", adapter.destroy);
+		this.emit("registry", "adapter", "down", adapterName);
+		adapter.destroy();
+		return adapter;
 	}
 }

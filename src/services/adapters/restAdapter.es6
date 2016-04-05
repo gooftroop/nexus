@@ -20,7 +20,15 @@ export const DEFAULT_METHOD = "all";
 /**
  *
  */
-export default class HttpAdapter extends IAdapter {
+export default class RestAdapter extends IAdapter {
+
+    static GET = "GET";
+    static DELETE = "DELETE";
+    static HEAD = "HEAD";
+    static OPTIONS = "OPTIONS";
+    static PATCH = "PATCH";
+    static POST = "POST";
+    static PUT = "PUT";
 
     /**
      * [constructor description]
@@ -60,9 +68,11 @@ export default class HttpAdapter extends IAdapter {
         // TODO ensure that path, method exists!
         let uri,
             path,
+            params,
             _whitelistedMethod,
             actions = model.get("actions"),
             action = intent.get("action"),
+            body = intent.get("body"),
             method = intent.get("method");
 
         // TODO validate that actions is in the format that we need
@@ -80,15 +90,45 @@ export default class HttpAdapter extends IAdapter {
 
         path = _.has(actions, "path") ? actions.path : action;
         uri = url.resolve(model.get("uri"), path);
-        request({
+
+        params = _.extend({
             url: uri,
-            method: method
-                // TODO fill out, like body
-        }, function(error, response, body) {
+            method: method,
+        }, model.get("options") || {});
+
+        if (method === RestAdapter.POST || method === RestAdapter.PUT || method === RestAdapter.PATCH) {
+            params.body = body;
+        }
+
+        request(params, function(error, response, body) {
             if (error) {
                 return reject(error);
             }
             resolve(response);
         });
+    }
+
+    /**
+     * [publish description]
+     * @param  {[type]} intent  [description]
+     * @param  {[type]} model   [description]
+     * @param  {[type]} resolve [description]
+     * @param  {[type]} reject  [description]
+     * @return {[type]}         [description]
+     */
+    publish(intent, model, resolve, reject) {
+        this.request(intent, model, resolve, reject);
+    }
+
+    /**
+     * [push description]
+     * @param  {[type]} intent  [description]
+     * @param  {[type]} model   [description]
+     * @param  {[type]} resolve [description]
+     * @param  {[type]} reject  [description]
+     * @return {[type]}         [description]
+     */
+    push(intent, model, resolve, reject) {
+        this.request(intent, model, resolve, reject);
     }
 }

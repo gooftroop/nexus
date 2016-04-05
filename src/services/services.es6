@@ -130,6 +130,8 @@ export default class ServicesController extends INexusController {
 
 		// Register Service
 		this.apis[name] = api;
+		this.logger.info("Service API '" + name + "'' defined");
+		this.emit("services", "api", "up", name, "define");
 
 		return this;
 	}
@@ -153,8 +155,11 @@ export default class ServicesController extends INexusController {
 	 */
 	remove(name) {
 		let service = this.get(name);
-		this.removeListener("destroy", service);
 		delete this.apis[name];
+		this.removeListener("destroy", service);
+		this.logger.info("Service API '" + name + "'' removed");
+		this.emit("services", "api", "down", name, "remove");
+		this.service.destroy();
 		return service;
 	}
 
@@ -174,6 +179,7 @@ export default class ServicesController extends INexusController {
 			_registry = Registry;
 		}
 		this.registry = _registry;
+		this.logger.debug("Registry attached to Service Controller");
 		return this;
 	}
 }

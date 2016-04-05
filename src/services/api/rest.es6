@@ -13,8 +13,8 @@ import {
     ServiceException
 }
 from "~/error/exceptions";
-import HttpAdapter from "~/services/adapters/httpAdapter";
-import { DEFAULT_METHOD } from "~/services/adapters/httpAdapter";
+import RestAdapter from "~/services/adapters/restAdapter";
+import { DEFAULT_METHOD } from "~/services/adapters/restAdapter";
 import {
     sendHttpError
 }
@@ -55,14 +55,12 @@ export default class RESTService extends APIService {
         this.router.get("/:name/:action(*)", ::this.request);
         this.router.post("/:name/:action(*)", ::this.publish);
         this.router.put("/:name/:action(*)", ::this.push);
-        this.router.delete("/:name/:action(*)", ::this.publish);
+        this.router.delete("/:name/:action(*)", ::this.request);
 
         // Configure error-handling middleware
         this.router.use(this._handleError);
 
         // Mount router to the central app under '/rest'
-        // For now we reach up to find the app in the controller. This actaully really sucks, so we should
-        // probably find a cleaner way to do this.
         app.use("/rest", this.router);
     }
 
@@ -99,6 +97,16 @@ export default class RESTService extends APIService {
         return this;
     }
 
+    /**
+     * [with description]
+     * @param  {[type]} value [description]
+     * @return {[type]}         [description]
+     */
+    with(key, value) {
+        this.model.set(key, value);
+        return this;
+    }
+
     /**************************************************************************
      * BINDING METHODS
      *************************************************************************/
@@ -123,14 +131,16 @@ export default class RESTService extends APIService {
 
         let name = req.params.name,
             actions = req.body.for,
+            options = req.body.options || {},
             // Since it's highly impractical to discover the uri of the client,
             // for now we'll force them to provide the service uri
             uri = req.body.uri;
 
         try {
             this.create(name)
-                .adapter("HttpAdapter", HttpAdapter)
+                .adapter("RestAdapter", RestAdapter)
                 .for(actions)
+                .with("options", options)
                 .on(uri)
                 .save();
         } catch (e) {
@@ -152,7 +162,7 @@ export default class RESTService extends APIService {
 
         try {
             // TODO does this block?
-            let intent = await this._protocolHelper(this.REQUEST, req);
+            let intent = await this._protocolHelper(APIService.REQUEST, req);
             res.status(intent.get("status")).send(intent.get("body"));
         } catch (e) {
             return next(e);
@@ -185,7 +195,7 @@ export default class RESTService extends APIService {
     async publish(req, res, next) {
         try {
             // TODO does this block?
-            let intent = await this._protocolHelper(this.PUBLISH, req);
+            let intent = await this._protocolHelper(APIService.PUBLISH, req);
             res.status(intent.get("status")).send(intent.get("body"));
         } catch (e) {
             return next(e);
@@ -202,7 +212,7 @@ export default class RESTService extends APIService {
     async push(req, res, next) {
         try {
             // TODO does this block?
-            let intent = await this._protocolHelper(this.PUSH, req);
+            let intent = await this._protocolHelper(APIService.PUSH, req);
             res.status(intent.get("status")).send(intent.get("body"));
         } catch (e) {
             return next(e);
@@ -264,7 +274,7 @@ export default class RESTService extends APIService {
         } else if (_.isString(actions)) {
             // TODO instantiate on one line
             let ret = {};
-            ret[actions] = HttpAdapter.DEFAULT_METHOD;
+            ret[actions] = DEFAULT_METHOD;
             return ret;
         } else if (actions === undefined) {
             // If actions is undefined, then allow full path pass-through
@@ -305,6 +315,7 @@ export default class RESTService extends APIService {
         intent.put("service", service);
         intent.put("method", req.method);
         intent.put("action", action);
+        intent.put("body", req.body);
 
         return this.getResultFor(intent);
     }

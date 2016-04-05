@@ -41,7 +41,7 @@
     "sinon-chai": ">=2.8.0"
   },
   "email": "bwebb@propelmarketing.com",
-  "engine": "node >= 5.5.0",
+  "engine": "node >= 5.10.0",
   "homepage": "https://github.com/propelmarketing/nexus",
   "keywords": "jspm babel microservices express zero-conf",
   "license": "MIT",

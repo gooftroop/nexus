@@ -111,10 +111,8 @@ export function sendHttpError(err, res) {
         report = " -- (CODE: " + err.code + "; STATUS: " + status + ") " + report;
     }
 
-    // TODO short-circuit this statement if in PRODUCTION mode. Don't leak stacks in production
-    // but...allow that to be configurable
     if (_.has(err, "stack")) {
-        report += (". STACK:\n" + err.stack);
+        report += ("\n" + err.stack);
     }
 
     logger.error("Error" + report);

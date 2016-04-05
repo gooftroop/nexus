@@ -29,12 +29,12 @@ export const API_RESPONSE = "com.propelmarketing.nexus.response";
 export default class APIService extends Doodad {
 
     // Protocols
-    PUBLISH = "publish";
-    SUBSCRIBE = "subscribe";
-    REQUEST = "request";
-    RESPOND = "respond";
-    PUSH = "push";
-    PULL = "pull";
+    static PUBLISH = "publish";
+    static SUBSCRIBE = "subscribe";
+    static REQUEST = "request";
+    static RESPOND = "respond";
+    static PUSH = "push";
+    static PULL = "pull";
 
     // The API's name
     name = null;
@@ -121,8 +121,8 @@ export default class APIService extends Doodad {
         }
 
         this.registry.registerAdapter(adapterName, Adapter);
-        console.log(this.model);
         this.model.adapter = adapterName;
+        this.logger.debug("Associated service '" + this.model.name + "' with API Adapter '" + adapterName + "'");
         return this;
      }
 
@@ -196,7 +196,10 @@ export default class APIService extends Doodad {
             throw new ServiceException(CODES.ADAPTER_NOT_DEFINED);
         }
 
-        this.registry.set(this.model.name, this.model);
+        let name = this.model.name;
+        this.registry.set(name, this.model);
+        this.logger.info("Service '" + name + "'' saved");
+        this.emit("services", "service", "up", name, "save");
         return this;
     }
 
@@ -229,10 +232,10 @@ export default class APIService extends Doodad {
             throw new ServiceException(CODES.MISSING_REGISTRY);
         }
 
-        let serviceAdapter = this.registry.remove(name);
-        this.removeListener("destroy", serviceAdapter.destroy);
-        serviceAdapter.destroy();
-        return serviceAdapter;
+        let service = this.registry.remove(name);
+        this.logger.info("Service '" + name + "'' removed");
+        this.emit("services", "service", "down", name, "remove");
+        return service;
     }
 
     /**************************************************************************

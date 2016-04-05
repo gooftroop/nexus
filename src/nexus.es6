@@ -122,7 +122,7 @@ export default class Nexus extends Doodad {
 	 */
 	set state(value) {
 		this._state = _.isString(value) ? STATES[value] : value;
-		this.emit(STATES.reverse(this._state));
+		this.emit("state", "change", STATES.reverse(this._state));
 	}
 
 	/**
@@ -131,7 +131,6 @@ export default class Nexus extends Doodad {
 	 * @return {[type]}            [description]
 	 */
 	attach(name, Controller) {
-		// TODO check if instantied?
 		if (this.state > 2) {
 			throw new NexusException(CODES.CANNOT_ATTACH_CONTROLLER, STATES.reverse(this.state));
 		}
@@ -153,6 +152,7 @@ export default class Nexus extends Doodad {
 		this.once("destroy", controller.destroy);
 		this.controllers[name] = controller;
 		this.logger.info("Attached controller " + name);
+		this.emit("controllers", "up", name);
 		return this;
 	}
 
@@ -239,6 +239,8 @@ export default class Nexus extends Doodad {
 		let controller = this.get(name);
 		this.removeListener("destroy", controller);
 		delete this.controllers[name];
+		this.logger.info("Removed controller " + name);
+		this.emit("controllers", "down", name);
 		return controller;
 	}
 
@@ -332,7 +334,7 @@ export default class Nexus extends Doodad {
 		process.on("SIGINT", this._boundSigIntHandler);
 
 		// Catches uncaught exceptions
-		this._boundUncaughtExceptionHandler = ::this._uncaughtExceptionHandler;
+		this._boundUncaughtExceptionHandler = ::this._unhandledExceptionHandler;
 		process.on("uncaughtException", this._boundUncaughtExceptionHandler);
 	}
 
@@ -469,6 +471,7 @@ export default class Nexus extends Doodad {
 	 * @return {[type]}        [description]
 	 */
 	_handleError(err, req, res, next) {
+		this.emit("error", "HTTP Exception", err);
 		sendHttpError(err, res);
 	}
 
@@ -522,11 +525,12 @@ export default class Nexus extends Doodad {
 	}
 
 	/**
-	 * [_uncaughtExceptionHandler description]
+	 * [_unhandledExceptionHandler description]
 	 * @param  {[type]} e [description]
 	 * @return {[type]}   [description]
 	 */
-	_uncaughtExceptionHandler(e) {
+	_unhandledExceptionHandler(e) {
 		this.logger && this.logger.error("Unhandled Exception. " + e);
+		this.emit("error", "Unhandled Exception", e);
 	}
 }

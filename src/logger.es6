@@ -51,8 +51,6 @@ export default class Logger extends winston.Logger {
 	static getLogger(name = null) {
 		if (instance == null) {
 			new Logger();
-			// Inherit from `events.EventEmitter`.
-			// util.inherits(instance, events.EventEmitter);
 		}
 		return (name == null) ? instance : instance.get(name);
 	}
