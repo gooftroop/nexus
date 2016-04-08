@@ -2,7 +2,7 @@
 
 import _ from "lodash";
 import CODES from "~/error/codes";
-import IRegistry from "~/services/registry/registry";
+import IRegistry from "~/middleware/services/registry/registry";
 import {
     IllegalArgumentException, RegistryException
 }

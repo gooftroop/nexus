@@ -3,7 +3,7 @@
 import _ from "lodash";
 import redis from "redis";
 import CODES from "~/error/codes";
-import IRegistry from "~/services/registry/registry";
+import IRegistry from "~/middleware/services/registry/registry";
 import {
     IllegalArgumentException, RegistryException
 }
@@ -23,7 +23,7 @@ export default class ServiceRegistry extends IRegistry {
      */
     constructor() {
         super();
-        let redisConfig = this.config.get("redis");
+        let redisConfig = this.config.registry.get("redis");
         // TODO build connection config object
         this.storage = redis.createClient();
 

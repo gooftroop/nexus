@@ -1,5 +1,6 @@
 "use strict";
 
+// Third-party imports
 import chai, {
     expect
 }
@@ -7,8 +8,11 @@ from "chai";
 import sinon from "sinon";
 import sinonChai from "sinon-chai";
 import request from "request";
+
+// Nexus imports
 import Nexus from "~/nexus";
-import Services from "~/services/services";
+import CODES from "~/error/codes";
+import { IllegalArgumentException } from "~/error/exceptions";
 
 chai.use(sinonChai);
 chai.config.includeStack = true;
@@ -50,54 +54,32 @@ describe("Core server functionality", function() {
         this.nexus = new Nexus();
     });
 
-    after(function(done) {
+    after(function() {
         if (this.nexus) {
-            this.nexus.destroy(done);
-        } else {
-            done();
+            this.nexus.destroy();
         }
     });
 
-    it("tests that nexus can be started successfully", function(done) {
+    it("tests that nexus can be started successfully", function() {
         expect(this.nexus).not.to.be.undefined;
-        this.nexus.run(() => {
-            expect(this.nexus).not.to.be.undefined;
-            done();
-        });
     });
 
-    describe("Network tests", function() {
+    describe("Controller tests", function() {
 
         describe("Correct tests", function() {
 
-            it("tests listing all available attached controllers", function(done) {
-                this.nexus.attach("services", Services);
-                request.get(this.nexus.address + "/describe", (error, response, body) => {
-                    expect(response.statusCode).to.equal(200);
-                    let msg = JSON.parse(body);
-                    expect(msg).to.have.property("controllers");
-                    expect(error).to.be.null;
-                    done();
-                });
+            it("tests listing all available attached middleware when no middleware is being used", function() {
+                expect(this.nexus.inspect("all")).to.deep.equal([]);
             });
         });
 
         describe("Error tests", function() {
 
-            it("tests a 404 error", function(done) {
-                request.get(this.nexus.address + "/foo", (error, response, body) => {
-                    expect(response.statusCode).to.equal(404);
-                    done();
-                });
-            });
-
-            it("tests a 400 error", function(done) {
-                request.get(this.nexus.address + "/describe/foo", (error, response, body) => {
-                    expect(response.statusCode).to.equal(400);
-                    let msg = JSON.parse(body);
-                    expect(msg).to.have.property("code").to.equal(5);
-                    done();
-                });
+            it("verifies that an IllegalArgumentException is thrown when inspecting a controller that has not been defined", function() {
+                let e = new IllegalArgumentException(CODES.NOT_FOUND, "middleware", "foo");
+                expect(() => {
+                    this.nexus.inspect("foo");
+                }).to.throw('Could not find middleware (value: \'foo\')');
             });
         });
     });

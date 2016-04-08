@@ -3,7 +3,7 @@
 import _ from "lodash";
 import config from "config";
 import Logger from "~/logger";
-import Doodad from "~/lib/doodad";
+import INexusMiddleware from "~/middleware/base";
 import {
 	NotYetImplementedException,
 	IllegalArgumentException,
@@ -14,16 +14,15 @@ from "~/error/exceptions";
 /**
  * Provides a registry of all services (or apps) connected to the server
  */
-export default class IServiceRegistry extends Doodad {
+export default class IServiceRegistry extends INexusMiddleware {
+
+	static ID = "registry";
 
 	// Internal Service mapping
 	storage = null;
 
 	// Logger instance
 	logger = Logger.getLogger("registry");
-
-	// Config object
-	config = config.get("registry");
 
 	// Default Adapter Registry
 	_adapterRegistry = {};
@@ -33,7 +32,7 @@ export default class IServiceRegistry extends Doodad {
 	 * @return {[type]} [description]
 	 */
 	constructor() {
-		super();
+		super(IServiceRegistry.ID);
 	}
 
 	/**************************************************************************

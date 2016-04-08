@@ -2,16 +2,17 @@
 
 // Third-party Imports
 import _ from "lodash";
+import config from "config";
 
 // Nexus Imports
 import Logger from "~/logger";
-import Doodad from "~/lib/doodad";
 import CODES from "~/error/codes";
 import Intent from "~/lib/intent";
-import INexusController from "~/controllers/base";
-import IAdapter from "~/services/adapters/adapter";
-import IRegistry from "~/services/registry/registry";
-import ServiceModel from "~/services/models/service";
+import INexusMiddleware from "~/middleware/base";
+import IAdapter from "~/middleware/services/adapters/adapter";
+import IRegistry from "~/middleware/services/registry/registry";
+import LocalRegistry from "~/middleware/services/registry/localRegistry";
+import ServiceModel from "~/middleware/services/models/service";
 import {
     NotYetImplementedException, IllegalArgumentException, ServiceException, HttpException
 }
@@ -21,12 +22,14 @@ from "~/error/exceptions";
 // localhost?
 // TODO implement pluggable/polymorphic validation
 
-export const API_RESPONSE = "com.propelmarketing.nexus.response";
-
 /**
  *
  */
-export default class APIService extends Doodad {
+export default class APIService extends INexusMiddleware {
+
+    static ID = "api";
+
+    static API_RESPONSE = "com.propelmarketing.nexus.response";
 
     // Protocols
     static PUBLISH = "publish";
@@ -36,34 +39,44 @@ export default class APIService extends Doodad {
     static PUSH = "push";
     static PULL = "pull";
 
-    // The API's name
-    name = null;
-
     // Logger instance
     logger = null;
 
     // Service Datastore field
-    registry = null;
+    _registry = null;
 
     /**
      * [constructor description]
-     * @param  {[type]} app [description]
+     * @param  {[type]} id [description]
      * @return {[type]}     [description]
      */
-    constructor(name) {
+    constructor(id, registry) {
+        super(id);
+        this.logger = Logger.getLogger(APIService.ID);
+        this.registry = registry;
+    }
 
-        super();
+    /**
+     * [registry description]
+     * @return {[type]} [description]
+     */
+    get registry() {
+        return this._registry;
+    }
 
-        if (name == null) {
-            throw new IllegalArgumentException(CODES.REQUIRED_PARAMETER, "name");
+    /**
+     * [registry description]
+     * @param  {[type]} registry [description]
+     * @return {[type]}          [description]
+     */
+    set registry(registry) {
+        if (!registry) {
+            this._registry = new LocalRegistry();
+        } else if (!(registry instanceof IRegistry)) {
+            throw new IllegalArgumentException(CODES.INVALID_TYPE, "registry", "IRegistry");
+        } else {
+            this._registry = registry;
         }
-
-        if (!_.isString(name)) {
-            throw new IllegalArgumentException(CODES.INVALID_TYPE, "name", "String");
-        }
-
-        this.name = name;
-        this.logger = Logger.getLogger("api");
     }
 
     /**
@@ -72,6 +85,11 @@ export default class APIService extends Doodad {
      * @return {[type]}        [description]
      */
     getResultFor(intent) {
+
+        if (this.registry == null) {
+            throw new ServiceException(CODES.MISSING_REGISTRY);
+        }
+
         // TODO need to do some validation here!
         // TODO Check if method exists - return error if not
         // TODO the adapter needs to be part of the model
@@ -86,23 +104,6 @@ export default class APIService extends Doodad {
                 this._rejectForIntent(reject)
             );
         });
-    }
-
-    /**
-     * [setRegistry description]
-     * @param {[type]} registry [description]
-     */
-    setRegistry(registry) {
-        if (registry == null) {
-            throw new IllegalArgumentException(CODES.REQUIRED_PARAMETER, "registry");
-        }
-
-        if (!(registry instanceof IRegistry)) {
-            throw new IllegalArgumentException(CODES.INVALID_TYPE, "registry", "IRegistry");
-        }
-
-        this.registry = registry;
-
     }
 
     /**************************************************************************
@@ -308,7 +309,7 @@ export default class APIService extends Doodad {
      */
     _resolveForIntent(resolve) {
         return (response) => {
-            let intent = new Intent(API_RESPONSE);
+            let intent = new Intent(APIService.API_RESPONSE);
             intent.put("status", response.statusCode);
             intent.put("body", response.body);
             resolve(intent);

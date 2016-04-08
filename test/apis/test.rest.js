@@ -11,9 +11,8 @@ import request from "request";
 
 // Nexus Imports
 import Nexus from "~/nexus";
-import Services from "~/services/services";
-import RESTService from "~/services/api/rest";
-import LocalRegistry from "~/services/registry/localRegistry";
+import RESTService from "~/middleware/services/api/rest";
+import LocalRegistry from "~/middleware/services/registry/localRegistry";
 
 // Test imports
 import RemoteRestService from "~/../test/resources/services/remoteRestService";
@@ -35,30 +34,23 @@ const TEST_PORT = 8081;
 
 describe("REST Service", function() {
 
-    before(function(done) {
+    before(function() {
 
         // Build the Nexus app
         this.nexus = new Nexus();
-        this.nexus.attach("services", Services);
-        this.nexus.get("services")
-            .use(LocalRegistry)
-            .define(new RESTService(this.nexus.app));
+        let restServices = new RESTService(new LocalRegistry());
+        this.nexus.use("rest", restServices);
+        restServices.run();
 
-        // Run Nexus
-        this.nexus.run(() => {
-            this.BASE_SERVICES_URL = this.nexus.address + "/rest";
-            this.SERVICES_INFO_URL = this.BASE_SERVICES_URL + "/info/";
-            this.SERVICES_REGISTER_URL = this.BASE_SERVICES_URL + "/register/";
-            this.SERVICES_UNREGISTER_URL = this.BASE_SERVICES_URL + "/unregister/";
-            done();
-        });
+        this.BASE_SERVICES_URL = restServices.address + "/rest";
+        this.SERVICES_INFO_URL = this.BASE_SERVICES_URL + "/info/";
+        this.SERVICES_REGISTER_URL = this.BASE_SERVICES_URL + "/register/";
+        this.SERVICES_UNREGISTER_URL = this.BASE_SERVICES_URL + "/unregister/";
     });
 
-    after(function(done) {
+    after(function() {
         if (this.nexus) {
-            this.nexus.destroy(done);
-        } else {
-            done();
+            this.nexus.destroy();
         }
     });
 

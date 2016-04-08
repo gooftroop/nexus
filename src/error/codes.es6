@@ -61,40 +61,26 @@ const CODES = {
 			return "Could not find " + name + " (value: '" + value + "')";
 		}
 	},
-	ILLEGAL_STATE: {
-		code: 6,
-		status: 500,
-		message: function(expected, actual) {
-			return "Invalid state. Expected to be in state " + expected + ", but is is " + actual;
-		}
-	},
-	UNEXPECTED_STATE: {
-		code: 7,
-		status: 500,
-		message: function(state) {
-			return "Invalid state. Expected to not be in state " + state;
-		}
-	},
-	CANNOT_ATTACH_CONTROLLER: {
-		code: 8,
-		status: 500,
-		message: function(state) {
-			return "Nexus is " + state + ". Cannot attach controller";
-		}
-	},
 	NOT_YET_IMPLEMENTED: {
-		code: 9,
+		code: 7,
 		status: 500,
 		message: function(name) {
 			return "Extend error: '" + name + "'' is not implemented";
 		}
 	},
-	// CONTROLLER EXCEPTIONS
-	DUPLICATE_CONTROLLER: {
+	// MIDDLEWARE EXCEPTIONS
+	DUPLICATE_MIDDLEWARE: {
 		code: 50,
-		status: 400,
+		status: 500,
 		message: function(name) {
-			return "Controller '" + name + "' is already attached";
+			return "Middleware '" + name + "' is already attached";
+		}
+	},
+	INVALID_MIDDLEWARE: {
+		code: 51,
+		status: 500,
+		message: function(name) {
+			return "'" + name + "' must be a class instance";
 		}
 	},
 	// SERVICE EXCEPTIONS

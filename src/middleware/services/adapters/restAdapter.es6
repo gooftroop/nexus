@@ -5,7 +5,7 @@ import _ from "lodash";
 import request from "request";
 import CODES from "~/error/codes";
 import validator from 'validator';
-import IAdapter from "~/services/adapters/adapter";
+import IAdapter from "~/middleware/services/adapters/adapter";
 import {
     ensureLeadingSlash
 }
