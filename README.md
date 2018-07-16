@@ -1,5 +1,7 @@
 # Nexus
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/gooftroop/nexus.svg)](https://greenkeeper.io/)
+
 Microservices proxy and manager that provides the ability to act as both a LAN/WAN microservices cluster manager. 
 1. Provides a public-facing Services ('/services/') API:
   - Register services for automatic API discovery and exposure on the proxy
